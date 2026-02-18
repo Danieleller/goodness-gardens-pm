@@ -14,9 +14,8 @@ import {
 import { KanbanColumn } from "./KanbanColumn";
 import { TaskCard } from "./TaskCard";
 import { updateTask } from "@/actions/tasks";
-import { CATEGORIES, CATEGORY_COLORS } from "@/lib/utils";
 import { Users, LayoutGrid } from "lucide-react";
-import type { Task, User } from "@/db/schema";
+import type { Task, User, Category } from "@/db/schema";
 
 type TaskWithRelations = Task & {
   assignedTo: User | null;
@@ -28,9 +27,11 @@ type ViewMode = "person" | "category";
 export function KanbanBoard({
   initialTasks,
   users,
+  categories,
 }: {
   initialTasks: TaskWithRelations[];
   users: User[];
+  categories: Category[];
 }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [view, setView] = useState<ViewMode>("person");
@@ -119,11 +120,11 @@ export function KanbanBoard({
             color: "bg-slate-50 border-slate-200",
           })),
         ]
-      : CATEGORIES.map((cat) => ({
-          id: cat,
-          title: cat === "ProductDev" ? "Product Dev" : cat,
-          tasks: filteredTasks.filter((t) => t.category === cat),
-          color: CATEGORY_COLORS[cat],
+      : categories.map((cat) => ({
+          id: cat.name,
+          title: cat.displayName,
+          tasks: filteredTasks.filter((t) => t.category === cat.name),
+          color: cat.color,
         }));
 
   return (

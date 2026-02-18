@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { getTaskWithAudit, getUsers } from "@/actions/tasks";
+import { getCategories } from "@/actions/admin";
 import { TaskDetailClient } from "./TaskDetailClient";
 
 export const dynamic = "force-dynamic";
@@ -14,9 +15,13 @@ export default async function TaskDetailPage({
   if (!session?.user) redirect("/login");
 
   const { id } = await params;
-  const [task, users] = await Promise.all([getTaskWithAudit(id), getUsers()]);
+  const [task, users, categories] = await Promise.all([
+    getTaskWithAudit(id),
+    getUsers(),
+    getCategories(),
+  ]);
 
   if (!task) redirect("/");
 
-  return <TaskDetailClient task={task as any} users={users} />;
+  return <TaskDetailClient task={task as any} users={users} categories={categories} />;
 }

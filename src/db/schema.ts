@@ -156,8 +156,23 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   }),
 }));
 
+// ── Categories ─────────────────────────────────────────
+export const categories = sqliteTable("categories", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  color: text("color").notNull().default("bg-slate-50 border-slate-200"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export const categoriesRelations = relations(categories, ({}) => ({}));
+
 // ── Type exports ───────────────────────────────────────
 export type User = typeof users.$inferSelect;
 export type Task = typeof tasks.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
+export type Category = typeof categories.$inferSelect;

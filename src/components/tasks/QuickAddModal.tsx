@@ -3,22 +3,24 @@
 import { useState, useTransition } from "react";
 import { Modal } from "@/components/ui/modal";
 import { createTask } from "@/actions/tasks";
-import { CATEGORIES, STATUSES, PRIORITIES } from "@/lib/utils";
-import type { User } from "@/db/schema";
+import { STATUSES, PRIORITIES } from "@/lib/utils";
+import type { User, Category } from "@/db/schema";
 
 export function QuickAddModal({
   open,
   onClose,
   users,
+  categories,
 }: {
   open: boolean;
   onClose: () => void;
   users: User[];
+  categories: Category[];
 }) {
   const [isPending, startTransition] = useTransition();
   const [title, setTitle] = useState("");
   const [assignee, setAssignee] = useState("");
-  const [category, setCategory] = useState<string>("Operations");
+  const [category, setCategory] = useState<string>(categories[0]?.name || "Operations");
   const [priority, setPriority] = useState<string>("medium");
   const [status, setStatus] = useState<string>("Backlog");
   const [dueDate, setDueDate] = useState("");
@@ -38,7 +40,7 @@ export function QuickAddModal({
       });
       setTitle("");
       setAssignee("");
-      setCategory("Operations");
+      setCategory(categories[0]?.name || "Operations");
       setPriority("medium");
       setStatus("Backlog");
       setDueDate("");
@@ -91,9 +93,9 @@ export function QuickAddModal({
               onChange={(e) => setCategory(e.target.value)}
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
             >
-              {CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c === "ProductDev" ? "Product Dev" : c}
+              {categories.map((c) => (
+                <option key={c.name} value={c.name}>
+                  {c.displayName}
                 </option>
               ))}
             </select>

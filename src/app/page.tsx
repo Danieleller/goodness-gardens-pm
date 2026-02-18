@@ -1,8 +1,8 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { desc } from "drizzle-orm";
-import { tasks, notifications } from "@/db/schema";
+import { desc, asc } from "drizzle-orm";
+import { tasks, notifications, categories } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { Header } from "@/components/layout/Header";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
@@ -13,7 +13,7 @@ export default async function HomePage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const [allTasks, allUsers, userNotifications] = await Promise.all([
+  const [allTasks, allUsers, userNotifications, allCategories] = await Promise.all([
     db.query.tasks.findMany({
       with: { assignedTo: true, createdBy: true },
       orderBy: desc(tasks.updatedAt),
@@ -25,6 +25,7 @@ export default async function HomePage() {
       orderBy: desc(notifications.createdAt),
       limit: 20,
     }),
+    db.query.categories.findMany({ orderBy: asc(categories.sortOrder) }),
   ]);
 
   return (
@@ -38,9 +39,10 @@ export default async function HomePage() {
         }}
         users={allUsers}
         notifications={userNotifications as any}
+        categories={allCategories}
       />
       <main className="flex-1 overflow-hidden">
-        <KanbanBoard initialTasks={allTasks as any} users={allUsers} />
+        <KanbanBoard initialTasks={allTasks as any} users={allUsers} categories={allCategories} />
       </main>
     </div>
   );

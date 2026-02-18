@@ -4,9 +4,10 @@ import { useState } from "react";
 import { SearchBar } from "./SearchBar";
 import { NotificationBell } from "./NotificationBell";
 import { QuickAddModal } from "@/components/tasks/QuickAddModal";
-import { Plus, LogOut } from "lucide-react";
+import { Plus, LogOut, Settings } from "lucide-react";
 import { signOut } from "next-auth/react";
-import type { User, Notification, Task } from "@/db/schema";
+import Link from "next/link";
+import type { User, Notification, Task, Category } from "@/db/schema";
 
 type NotifWithTask = Notification & { task: Task | null };
 
@@ -14,10 +15,12 @@ export function Header({
   user,
   users,
   notifications,
+  categories,
 }: {
   user: { name?: string | null; email?: string | null; image?: string | null; role?: string };
   users: User[];
   notifications: NotifWithTask[];
+  categories: Category[];
 }) {
   const [showAdd, setShowAdd] = useState(false);
 
@@ -53,6 +56,16 @@ export function Header({
 
             <NotificationBell notifications={notifications} />
 
+            {user.role === "admin" && (
+              <Link
+                href="/settings"
+                className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                title="Settings"
+              >
+                <Settings className="w-4 h-4" />
+              </Link>
+            )}
+
             <div className="flex items-center gap-2 ml-2 pl-2 border-l border-slate-200">
               {user.image ? (
                 <img
@@ -84,6 +97,7 @@ export function Header({
         open={showAdd}
         onClose={() => setShowAdd(false)}
         users={users}
+        categories={categories}
       />
     </>
   );

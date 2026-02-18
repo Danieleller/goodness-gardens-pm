@@ -4,7 +4,6 @@ import { useState, useTransition } from "react";
 import { updateTask, deleteTask } from "@/actions/tasks";
 import { Badge } from "@/components/ui/badge";
 import {
-  CATEGORIES,
   STATUSES,
   PRIORITIES,
   PRIORITY_COLORS,
@@ -23,7 +22,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { Task, User, AuditLog } from "@/db/schema";
+import type { Task, User, AuditLog, Category } from "@/db/schema";
 
 type TaskFull = Task & {
   assignedTo: User | null;
@@ -45,9 +44,11 @@ const ACTION_LABELS: Record<string, string> = {
 export function TaskDetailClient({
   task: initialTask,
   users,
+  categories,
 }: {
   task: TaskFull;
   users: User[];
+  categories: Category[];
 }) {
   const router = useRouter();
   const [task, setTask] = useState(initialTask);
@@ -190,9 +191,9 @@ export function TaskDetailClient({
                 onChange={(e) => handleUpdate("category", e.target.value)}
                 className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm"
               >
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c === "ProductDev" ? "Product Dev" : c}
+                {categories.map((c) => (
+                  <option key={c.name} value={c.name}>
+                    {c.displayName}
                   </option>
                 ))}
               </select>
