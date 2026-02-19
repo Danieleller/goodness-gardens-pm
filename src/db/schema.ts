@@ -140,6 +140,7 @@ export const tasksRelations = relations(tasks, ({ one, many }) => ({
   auditLogs: many(auditLogs),
   additionalAssignees: many(taskAssignees),
   groupAssignments: many(taskGroupAssignments),
+  subtasks: many(subtasks),
 }));
 
 export const auditLogsRelations = relations(auditLogs, ({ one }) => ({
@@ -264,6 +265,27 @@ export const taskGroupAssignments = sqliteTable("task_group_assignments", {
     .$defaultFn(() => new Date()),
 });
 
+// ââ Sub-tasks ââââââââââââââââââââââââââââââââââââââââ
+export const subtasks = sqliteTable("subtasks", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  taskId: text("task_id")
+    .notNull()
+    .references(() => tasks.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  completed: integer("completed", { mode: "boolean" }).notNull().default(false),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export const subtasksRelations = relations(subtasks, ({ one }) => ({
+  task: one(tasks, {
+    fields: [subtasks.taskId],
+    references: [tasks.id],
+  }),
+}));
+
 // ââ Group Relations âââââââââââââââââââââââââââââââââââ
 export const userGroupsRelations = relations(userGroups, ({ one, many }) => ({
   createdBy: one(users, {
@@ -328,3 +350,4 @@ export type UserGroup = typeof userGroups.$inferSelect;
 export type UserGroupMember = typeof userGroupMembers.$inferSelect;
 export type TaskAssignee = typeof taskAssignees.$inferSelect;
 export type TaskGroupAssignment = typeof taskGroupAssignments.$inferSelect;
+export type Subtask = typeof subtasks.$inferSelect;
