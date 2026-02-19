@@ -1,12 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateTask, deleteTask, assignTaskToUsers, unassignTaskFromUser, assignTaskToGroup, unassignTaskFromGroup } from "@/actions/tasks";
+import { updateTask, deleteTask, assignTaskToUsers, unassignTaskFromUser, assignTaskToGroup, unassignTaskFromGroup, createSubtask, toggleSubtask, deleteSubtask } from "@/actions/tasks";
 import { Badge } from "@/components/ui/badge";
 import {
   STATUSES,
-  PRIORITIES,
-  PRIORITY_COLORS,
   STATUS_COLORS,
   formatDate,
   isOverdue,
@@ -23,10 +21,12 @@ import {
   UsersRound,
   Plus,
   X,
+  ListChecks,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { Task, User, AuditLog, Category, TaskAssignee, TaskGroupAssignment, UserGroup } from "@/db/schema";
+import type { Task, User, AuditLog, Category, TaskAssignee, TaskGroupAssignment, UserGroup, Subtask } from "@/db/schema";
 
 type TaskFull = Task & {
   assignedTo: User | null;
@@ -34,6 +34,7 @@ type TaskFull = Task & {
   auditLogs: (AuditLog & { user: User })[];
   additionalAssignees?: (TaskAssignee & { user: User })[];
   groupAssignments?: (TaskGroupAssignment & { group: UserGroup })[];
+  subtasks?: Subtask[];
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -42,7 +43,7 @@ const ACTION_LABELS: Record<string, string> = {
   category_changed: "changed category",
   status_changed: "changed status",
   priority_changed: "changed priority",
-  due_date_changed: "changed due date",
+  due_date_changed: "changed deadline",
   title_changed: "changed title",
   description_changed: "changed description",
 };
@@ -66,6 +67,8 @@ export function TaskDetailClient({
   const [description, setDescription] = useState(task.description || "");
   const [showAddAssignee, setShowAddAssignee] = useState(false);
   const [showAddGroup, setShowAddGroup] = useState(false);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  const [showAddSubtask, setShowAddSubtask] = useState(false);
 
   const handleUpdate = (field: string, value: any) => {
     startTransition(async () => {
@@ -108,6 +111,29 @@ export function TaskDetailClient({
   const handleRemoveGroup = (groupId: string) => {
     startTransition(async () => {
       await unassignTaskFromGroup(task.id, groupId);
+      router.refresh();
+    });
+  };
+
+  const handleCreateSubtask = () => {
+    if (!newSubtaskTitle.trim()) return;
+    startTransition(async () => {
+      await createSubtask(task.id, newSubtaskTitle.trim());
+      setNewSubtaskTitle("");
+      router.refresh();
+    });
+  };
+
+  const handleToggleSubtask = (subtaskId: string, completed: boolean) => {
+    startTransition(async () => {
+      await toggleSubtask(subtaskId, completed);
+      router.refresh();
+    });
+  };
+
+  const handleDeleteSubtask = (subtaskId: string) => {
+    startTransition(async () => {
+      await deleteSubtask(subtaskId);
       router.refresh();
     });
   };
@@ -268,26 +294,9 @@ export function TaskDetailClient({
             </div>
 
             <div>
-              <label className="text-xs font-medium text-slate-500 mb-1.5 block">
-                Priority
-              </label>
-              <select
-                value={task.priority}
-                onChange={(e) => handleUpdate("priority", e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-800"
-              >
-                {PRIORITIES.map((p) => (
-                  <option key={p} value={p}>
-                    {p.charAt(0).toUpperCase() + p.slice(1)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
               <label className="flex items-center gap-1.5 text-xs font-medium text-slate-500 mb-1.5">
                 <Calendar className="w-3.5 h-3.5" />
-                Due Date
+                Deadline
               </label>
               <input
                 type="date"
@@ -429,6 +438,105 @@ export function TaskDetailClient({
                 </button>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Sub-tasks */}
+        <div className="bg-white rounded-xl border border-slate-200 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <ListChecks className="w-4 h-4" />
+              Sub-tasks
+              {(task.subtasks?.length ?? 0) > 0 && (
+                <span className="text-xs font-normal text-slate-400">
+                  {task.subtasks?.filter((s) => s.completed).length}/{task.subtasks?.length}
+                </span>
+              )}
+            </h2>
+            <button
+              onClick={() => setShowAddSubtask(!showAddSubtask)}
+              className="flex items-center gap-1 text-xs text-[#1a3a2a] hover:text-[#1a3a2a]/80"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add
+            </button>
+          </div>
+
+          {/* Progress bar */}
+          {(task.subtasks?.length ?? 0) > 0 && (
+            <div className="w-full bg-slate-100 rounded-full h-1.5 mb-3">
+              <div
+                className="bg-[#1a3a2a] h-1.5 rounded-full transition-all"
+                style={{
+                  width: `${Math.round(
+                    ((task.subtasks?.filter((s) => s.completed).length ?? 0) /
+                      (task.subtasks?.length ?? 1)) *
+                      100
+                  )}%`,
+                }}
+              />
+            </div>
+          )}
+
+          {showAddSubtask && (
+            <div className="flex gap-2 mb-3">
+              <input
+                autoFocus
+                type="text"
+                value={newSubtaskTitle}
+                onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCreateSubtask()}
+                placeholder="What needs to be done?"
+                className="flex-1 border border-slate-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+              />
+              <button
+                onClick={handleCreateSubtask}
+                disabled={isPending || !newSubtaskTitle.trim()}
+                className="px-3 py-1.5 bg-[#1a3a2a] text-white text-sm rounded-lg disabled:opacity-50"
+              >
+                Add
+              </button>
+            </div>
+          )}
+
+          <div className="space-y-1">
+            {(!task.subtasks || task.subtasks.length === 0) && !showAddSubtask && (
+              <p className="text-xs text-slate-400">No sub-tasks yet</p>
+            )}
+            {task.subtasks
+              ?.sort((a, b) => a.sortOrder - b.sortOrder)
+              .map((sub) => (
+                <div
+                  key={sub.id}
+                  className="flex items-center gap-2 group py-1"
+                >
+                  <button
+                    onClick={() => handleToggleSubtask(sub.id, !sub.completed)}
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                      sub.completed
+                        ? "bg-[#1a3a2a] border-[#1a3a2a] text-white"
+                        : "border-slate-300 hover:border-[#1a3a2a]"
+                    }`}
+                  >
+                    {sub.completed && <Check className="w-3 h-3" />}
+                  </button>
+                  <span
+                    className={`flex-1 text-sm ${
+                      sub.completed
+                        ? "text-slate-400 line-through"
+                        : "text-slate-700"
+                    }`}
+                  >
+                    {sub.title}
+                  </span>
+                  <button
+                    onClick={() => handleDeleteSubtask(sub.id)}
+                    className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-50 text-slate-400 hover:text-red-500 transition-opacity"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ))}
           </div>
         </div>
 
