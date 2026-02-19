@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { desc, asc } from "drizzle-orm";
-import { tasks, notifications, categories, rocks } from "@/db/schema";
+import { tasks, notifications, categories, rocks, userGroups } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { Header } from "@/components/layout/Header";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
@@ -13,9 +13,14 @@ export default async function HomePage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const [allTasks, allUsers, userNotifications, allCategories, allRocks] = await Promise.all([
+  const [allTasks, allUsers, userNotifications, allCategories, allRocks, allGroups] = await Promise.all([
     db.query.tasks.findMany({
-      with: { assignedTo: true, createdBy: true },
+      with: {
+        assignedTo: true,
+        createdBy: true,
+        additionalAssignees: { with: { user: true } },
+        groupAssignments: { with: { group: true } },
+      },
       orderBy: desc(tasks.updatedAt),
     }),
     db.query.users.findMany(),
@@ -29,6 +34,11 @@ export default async function HomePage() {
     db.query.rocks.findMany({
       with: { owner: true },
       orderBy: [asc(rocks.ownerUserId), asc(rocks.rockNumber)],
+    }),
+    db.query.userGroups.findMany({
+      with: {
+        members: { with: { user: true } },
+      },
     }),
   ]);
 
@@ -44,6 +54,7 @@ export default async function HomePage() {
         users={allUsers}
         notifications={userNotifications as any}
         categories={allCategories}
+        groups={allGroups as any}
       />
       <main className="flex-1 overflow-hidden">
         <KanbanBoard
