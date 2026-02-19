@@ -18,7 +18,13 @@ type TaskWithRelations = Task & {
   createdBy: User;
 };
 
-export function TaskCard({ task, isRocksColumn = false }: { task: TaskWithRelations; isRocksColumn?: boolean }) {
+export function TaskCard({
+  task,
+  isRocksColumn = false,
+}: {
+  task: TaskWithRelations;
+  isRocksColumn?: boolean;
+}) {
   const {
     attributes,
     listeners,
@@ -35,24 +41,31 @@ export function TaskCard({ task, isRocksColumn = false }: { task: TaskWithRelati
 
   const overdue = isOverdue(task.dueDate) && task.status !== "Done";
 
+  // Detect if this task originated from Ultimate Rocks (R-prefixed ID)
+  const isRockTask = task.id.startsWith("R-");
+
+  // Determine card style:
+  // - In the Rocks column: dark glass (glass-dark)
+  // - Rock task in a non-Rocks column: black glass (glass-dark) for visual distinction
+  // - Normal task in normal column: light glass (glass)
+  const isDarkCard = isRocksColumn || (isRockTask && !isRocksColumn);
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`group rounded-lg border p-3 shadow-sm hover:shadow-md transition-shadow ${
-        isDragging ? "opacity-50 shadow-lg" : ""
-      } ${
-        isRocksColumn
-          ? "bg-gray-900 border-gray-700"
-          : "bg-white border-slate-200"
-      }`}
+      className={`group rounded-xl p-3 transition-all ${
+        isDragging ? "opacity-50 scale-[1.02]" : "hover:shadow-lg"
+      } ${isDarkCard ? "glass-dark" : "glass"}`}
     >
       <div className="flex items-start gap-2">
         <button
           {...attributes}
           {...listeners}
           className={`mt-0.5 cursor-grab active:cursor-grabbing shrink-0 ${
-            isRocksColumn ? "text-gray-600 hover:text-gray-400" : "text-slate-300 hover:text-slate-500"
+            isDarkCard
+              ? "text-gray-500 hover:text-gray-300"
+              : "text-slate-300 hover:text-slate-500"
           }`}
         >
           <GripVertical className="w-4 h-4" />
@@ -61,7 +74,7 @@ export function TaskCard({ task, isRocksColumn = false }: { task: TaskWithRelati
           <Link
             href={`/tasks/${task.id}`}
             className={`text-sm font-medium line-clamp-2 block ${
-              isRocksColumn
+              isDarkCard
                 ? "text-white hover:text-gray-300"
                 : "text-slate-900 hover:text-[#1a3a2a]"
             }`}
@@ -76,7 +89,11 @@ export function TaskCard({ task, isRocksColumn = false }: { task: TaskWithRelati
             {task.dueDate && (
               <span
                 className={`inline-flex items-center gap-1 text-xs ${
-                  overdue ? "text-red-600 font-medium" : isRocksColumn ? "text-gray-400" : "text-slate-500"
+                  overdue
+                    ? "text-red-600 font-medium"
+                    : isDarkCard
+                      ? "text-gray-400"
+                      : "text-slate-500"
                 }`}
               >
                 <Calendar className="w-3 h-3" />
@@ -85,9 +102,11 @@ export function TaskCard({ task, isRocksColumn = false }: { task: TaskWithRelati
             )}
           </div>
           {task.assignedTo && (
-            <p className={`text-xs mt-1.5 truncate ${
-              isRocksColumn ? "text-gray-500" : "text-slate-400"
-            }`}>
+            <p
+              className={`text-xs mt-1.5 truncate ${
+                isDarkCard ? "text-gray-500" : "text-slate-400"
+              }`}
+            >
               → {task.assignedTo.name || task.assignedTo.email}
             </p>
           )}
