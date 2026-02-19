@@ -173,7 +173,7 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
                         ? "bg-emerald-100 text-emerald-700 line-through"
                         : task.status === "Blocked"
                           ? "bg-red-100 text-red-700"
-                          : isPast && task.status !== "Done"
+                          : isPast
                             ? "bg-red-50 text-red-600 font-medium"
                             : "bg-slate-100 text-slate-700 hover:bg-slate-200"
                     }`}
