@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateTask, deleteTask } from "@/actions/tasks";
+import { updateTask, deleteTask, assignTaskToUsers, unassignTaskFromUser, assignTaskToGroup, unassignTaskFromGroup } from "@/actions/tasks";
 import { Badge } from "@/components/ui/badge";
 import {
   STATUSES,
@@ -19,15 +19,21 @@ import {
   FolderOpen,
   Trash2,
   Activity,
+  Users,
+  UsersRound,
+  Plus,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { Task, User, AuditLog, Category } from "@/db/schema";
+import type { Task, User, AuditLog, Category, TaskAssignee, TaskGroupAssignment, UserGroup } from "@/db/schema";
 
 type TaskFull = Task & {
   assignedTo: User | null;
   createdBy: User;
   auditLogs: (AuditLog & { user: User })[];
+  additionalAssignees?: (TaskAssignee & { user: User })[];
+  groupAssignments?: (TaskGroupAssignment & { group: UserGroup })[];
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -45,10 +51,12 @@ export function TaskDetailClient({
   task: initialTask,
   users,
   categories,
+  groups = [],
 }: {
   task: TaskFull;
   users: User[];
   categories: Category[];
+  groups?: (UserGroup & { members: any[] })[];
 }) {
   const router = useRouter();
   const [task, setTask] = useState(initialTask);
@@ -56,6 +64,8 @@ export function TaskDetailClient({
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || "");
+  const [showAddAssignee, setShowAddAssignee] = useState(false);
+  const [showAddGroup, setShowAddGroup] = useState(false);
 
   const handleUpdate = (field: string, value: any) => {
     startTransition(async () => {
@@ -72,7 +82,48 @@ export function TaskDetailClient({
     });
   };
 
+  const handleAddAssignee = (userId: string) => {
+    startTransition(async () => {
+      await assignTaskToUsers(task.id, [userId]);
+      router.refresh();
+    });
+    setShowAddAssignee(false);
+  };
+
+  const handleRemoveAssignee = (userId: string) => {
+    startTransition(async () => {
+      await unassignTaskFromUser(task.id, userId);
+      router.refresh();
+    });
+  };
+
+  const handleAddGroup = (groupId: string) => {
+    startTransition(async () => {
+      await assignTaskToGroup(task.id, groupId);
+      router.refresh();
+    });
+    setShowAddGroup(false);
+  };
+
+  const handleRemoveGroup = (groupId: string) => {
+    startTransition(async () => {
+      await unassignTaskFromGroup(task.id, groupId);
+      router.refresh();
+    });
+  };
+
   const overdue = isOverdue(task.dueDate) && task.status !== "Done";
+
+  // Get users not already assigned
+  const assignedUserIds = new Set([
+    task.assignedToUserId,
+    ...(task.additionalAssignees?.map((a) => a.userId) || []),
+  ].filter(Boolean));
+  const availableUsers = users.filter((u) => !assignedUserIds.has(u.id));
+
+  // Get groups not already assigned
+  const assignedGroupIds = new Set(task.groupAssignments?.map((g) => g.groupId) || []);
+  const availableGroups = groups.filter((g) => !assignedGroupIds.has(g.id));
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -160,7 +211,7 @@ export function TaskDetailClient({
             <div>
               <label className="flex items-center gap-1.5 text-xs font-medium text-slate-500 mb-1.5">
                 <UserIcon className="w-3.5 h-3.5" />
-                Assignee
+                Primary Assignee
               </label>
               <select
                 value={task.assignedToUserId || ""}
@@ -262,6 +313,122 @@ export function TaskDetailClient({
                 {task.createdBy?.name || task.createdBy?.email}
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* Additional Assignees */}
+        <div className="bg-white rounded-xl border border-slate-200 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <Users className="w-4 h-4" />
+              Additional Assignees
+            </h2>
+            {availableUsers.length > 0 && (
+              <button
+                onClick={() => setShowAddAssignee(!showAddAssignee)}
+                className="flex items-center gap-1 text-xs text-[#1a3a2a] hover:text-[#1a3a2a]/80"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add
+              </button>
+            )}
+          </div>
+
+          {showAddAssignee && (
+            <div className="mb-3">
+              <select
+                value=""
+                onChange={(e) => e.target.value && handleAddAssignee(e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm"
+              >
+                <option value="">Select a person...</option>
+                {availableUsers.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.name || u.email}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {(!task.additionalAssignees || task.additionalAssignees.length === 0) && (
+              <p className="text-xs text-slate-400">No additional assignees</p>
+            )}
+            {task.additionalAssignees?.map((a) => (
+              <div key={a.id} className="flex items-center gap-2 text-sm">
+                {a.user?.image ? (
+                  <img src={a.user.image} alt="" className="w-6 h-6 rounded-full" />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-medium text-slate-500">
+                    {(a.user?.name || a.user?.email || "?")[0].toUpperCase()}
+                  </div>
+                )}
+                <span className="flex-1 text-slate-700">{a.user?.name || a.user?.email}</span>
+                <button
+                  onClick={() => handleRemoveAssignee(a.userId)}
+                  disabled={isPending}
+                  className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-500"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Group Assignments */}
+        <div className="bg-white rounded-xl border border-slate-200 p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <UsersRound className="w-4 h-4" />
+              Group Assignments
+            </h2>
+            {availableGroups.length > 0 && (
+              <button
+                onClick={() => setShowAddGroup(!showAddGroup)}
+                className="flex items-center gap-1 text-xs text-[#1a3a2a] hover:text-[#1a3a2a]/80"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add
+              </button>
+            )}
+          </div>
+
+          {showAddGroup && (
+            <div className="mb-3">
+              <select
+                value=""
+                onChange={(e) => e.target.value && handleAddGroup(e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm"
+              >
+                <option value="">Select a group...</option>
+                {availableGroups.map((g) => (
+                  <option key={g.id} value={g.id}>
+                    {g.name} ({g.members.length} members)
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="space-y-2">
+            {(!task.groupAssignments || task.groupAssignments.length === 0) && (
+              <p className="text-xs text-slate-400">No group assignments</p>
+            )}
+            {task.groupAssignments?.map((ga) => (
+              <div key={ga.id} className="flex items-center gap-2 text-sm">
+                <div className={`w-4 h-4 rounded border-2 shrink-0 ${ga.group?.color || "bg-slate-50 border-slate-200"}`} />
+                <span className="flex-1 text-slate-700">{ga.group?.name}</span>
+                <button
+                  onClick={() => handleRemoveGroup(ga.groupId)}
+                  disabled={isPending}
+                  className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-500"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ))}
           </div>
         </div>
 
