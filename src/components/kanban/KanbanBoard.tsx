@@ -4,12 +4,15 @@ import { useState, useCallback, useMemo } from "react";
 import {
   DndContext,
   DragOverlay,
+  pointerWithin,
   closestCorners,
+  rectIntersection,
   PointerSensor,
   useSensor,
   useSensors,
   type DragStartEvent,
   type DragEndEvent,
+  type CollisionDetection,
 } from "@dnd-kit/core";
 import { KanbanColumn } from "./KanbanColumn";
 import { TaskCard } from "./TaskCard";
@@ -46,6 +49,34 @@ export function KanbanBoard({
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
+
+  // Custom collision detection: try pointerWithin first (detects empty columns
+  // when the cursor is inside their bounds), then fall back to closestCorners
+  // for fine-grained positioning among task cards within a column.
+  const customCollisionDetection: CollisionDetection = useCallback(
+    (args) => {
+      // First check pointerWithin â this reliably detects column droppables
+      // even when they're empty, because it checks if pointer is inside rect
+      const pointerCollisions = pointerWithin(args);
+
+      // If pointer is inside a column droppable, prefer that
+      if (pointerCollisions.length > 0) {
+        // Check if any collision is a column (not a task card)
+        const columnCollision = pointerCollisions.find((c) =>
+          columnIds.has(c.id as string)
+        );
+        if (columnCollision) {
+          // Also include any task collisions for sorting within the column
+          return pointerCollisions;
+        }
+        return pointerCollisions;
+      }
+
+      // Fall back to closestCorners for edge cases
+      return closestCorners(args);
+    },
+    [columnIds]
   );
 
   // Apply filters
@@ -250,7 +281,7 @@ export function KanbanBoard({
         <div className="flex-1 overflow-x-auto p-4">
           <DndContext
             sensors={sensors}
-            collisionDetection={closestCorners}
+            collisionDetection={customCollisionDetection}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
