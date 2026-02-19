@@ -7,20 +7,23 @@ import { QuickAddModal } from "@/components/tasks/QuickAddModal";
 import { Plus, LogOut, Settings } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
-import type { User, Notification, Task, Category } from "@/db/schema";
+import type { User, Notification, Task, Category, UserGroup, UserGroupMember } from "@/db/schema";
 
 type NotifWithTask = Notification & { task: Task | null };
+type GroupWithMembers = UserGroup & { members: (UserGroupMember & { user: User })[] };
 
 export function Header({
   user,
   users,
   notifications,
   categories,
+  groups = [],
 }: {
   user: { name?: string | null; email?: string | null; image?: string | null; role?: string };
   users: User[];
   notifications: NotifWithTask[];
   categories: Category[];
+  groups?: GroupWithMembers[];
 }) {
   const [showAdd, setShowAdd] = useState(false);
 
@@ -98,6 +101,7 @@ export function Header({
         onClose={() => setShowAdd(false)}
         users={users}
         categories={categories}
+        groups={groups}
       />
     </>
   );
