@@ -17,8 +17,9 @@ import {
 import { KanbanColumn } from "./KanbanColumn";
 import { TaskCard } from "./TaskCard";
 import { RocksView } from "../rocks/RocksView";
+import { CalendarView } from "../calendar/CalendarView";
 import { updateTask } from "@/actions/tasks";
-import { Users, LayoutGrid, Target } from "lucide-react";
+import { Users, LayoutGrid, Target, CalendarDays } from "lucide-react";
 import type { Task, User, Category, Rock } from "@/db/schema";
 
 type TaskWithRelations = Task & {
@@ -28,7 +29,7 @@ type TaskWithRelations = Task & {
 
 type RockWithOwner = Rock & { owner: User };
 
-type ViewMode = "person" | "category" | "rocks";
+type ViewMode = "person" | "category" | "rocks" | "calendar";
 
 export function KanbanBoard({
   initialTasks,
@@ -45,8 +46,6 @@ export function KanbanBoard({
   const [view, setView] = useState<ViewMode>("person");
   const [activeTask, setActiveTask] = useState<TaskWithRelations | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const [priorityFilter, setPriorityFilter] = useState<string>("");
-
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
@@ -54,7 +53,6 @@ export function KanbanBoard({
   // Apply filters
   const filteredTasks = tasks.filter((t) => {
     if (statusFilter && t.status !== statusFilter) return false;
-    if (priorityFilter && t.priority !== priorityFilter) return false;
     return true;
   });
 
@@ -243,9 +241,20 @@ export function KanbanBoard({
             <Target className="w-4 h-4" />
             Ultimate Rocks
           </button>
+          <button
+            onClick={() => setView("calendar")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              view === "calendar"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            <CalendarDays className="w-4 h-4" />
+            Calendar
+          </button>
         </div>
 
-        {view !== "rocks" && (
+        {(view === "person" || view === "category") && (
           <>
             {/* Filters */}
             <select
@@ -260,23 +269,15 @@ export function KanbanBoard({
               <option value="Done">Done</option>
             </select>
 
-            <select
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-              className="text-sm border border-slate-200 rounded-md px-2 py-1.5 text-slate-600 bg-white"
-            >
-              <option value="">All priorities</option>
-              <option value="high">High</option>
-              <option value="medium">Medium</option>
-              <option value="low">Low</option>
-            </select>
           </>
         )}
       </div>
 
-      {/* Board or Rocks View */}
+      {/* Board, Rocks, or Calendar View */}
       {view === "rocks" ? (
         <RocksView rocks={rocks} users={users} />
+      ) : view === "calendar" ? (
+        <CalendarView tasks={tasks} />
       ) : (
         <div className="flex-1 overflow-x-auto p-4">
           <DndContext
