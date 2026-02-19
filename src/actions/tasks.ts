@@ -20,7 +20,9 @@ export async function createTask(data: {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  const id = crypto.randomUUID();
+  // Generate unique ID: R-prefix for Rocks tasks, auto UUID for others
+  const uuid = crypto.randomUUID();
+  const id = data.category === "Rocks" ? `R-${uuid}` : uuid;
   const now = new Date();
 
   await db.insert(tasks).values({
