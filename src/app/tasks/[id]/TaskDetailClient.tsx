@@ -154,14 +154,14 @@ export function TaskDetailClient({
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="text-xl font-semibold w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+                className="text-xl font-semibold w-full border border-slate-300 rounded-lg px-3 py-2 text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
               />
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
                 placeholder="Add a description..."
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
               />
               <div className="flex gap-2">
                 <button
@@ -221,7 +221,7 @@ export function TaskDetailClient({
                     e.target.value || null
                   )
                 }
-                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm"
+                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-800"
               >
                 <option value="">Unassigned</option>
                 {users.map((u) => (
@@ -240,7 +240,7 @@ export function TaskDetailClient({
               <select
                 value={task.category}
                 onChange={(e) => handleUpdate("category", e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm"
+                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-800"
               >
                 {categories.map((c) => (
                   <option key={c.name} value={c.name}>
@@ -257,7 +257,7 @@ export function TaskDetailClient({
               <select
                 value={task.status}
                 onChange={(e) => handleUpdate("status", e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm"
+                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-800"
               >
                 {STATUSES.map((s) => (
                   <option key={s} value={s}>
@@ -274,7 +274,7 @@ export function TaskDetailClient({
               <select
                 value={task.priority}
                 onChange={(e) => handleUpdate("priority", e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm"
+                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-800"
               >
                 {PRIORITIES.map((p) => (
                   <option key={p} value={p}>
@@ -339,7 +339,7 @@ export function TaskDetailClient({
               <select
                 value=""
                 onChange={(e) => e.target.value && handleAddAssignee(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm"
+                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-800"
               >
                 <option value="">Select a person...</option>
                 {availableUsers.map((u) => (
@@ -400,7 +400,7 @@ export function TaskDetailClient({
               <select
                 value=""
                 onChange={(e) => e.target.value && handleAddGroup(e.target.value)}
-                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm"
+                className="w-full border border-slate-200 rounded-lg px-3 py-1.5 text-sm text-slate-800"
               >
                 <option value="">Select a group...</option>
                 {availableGroups.map((g) => (
