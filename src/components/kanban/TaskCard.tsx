@@ -11,11 +11,13 @@ import {
 } from "@/lib/utils";
 import { Calendar, GripVertical } from "lucide-react";
 import Link from "next/link";
-import type { Task, User } from "@/db/schema";
+import type { Task, User, TaskAssignee, TaskGroupAssignment, UserGroup } from "@/db/schema";
 
 type TaskWithRelations = Task & {
   assignedTo: User | null;
   createdBy: User;
+  additionalAssignees?: (TaskAssignee & { user: User })[];
+  groupAssignments?: (TaskGroupAssignment & { group: UserGroup })[];
 };
 
 export function TaskCard({
@@ -102,13 +104,26 @@ export function TaskCard({
             )}
           </div>
           {task.assignedTo && (
-            <p
-              className={`text-xs mt-1.5 truncate ${
-                isDarkCard ? "text-gray-500" : "text-slate-400"
-              }`}
-            >
-              → {task.assignedTo.name || task.assignedTo.email}
-            </p>
+            <div className="flex items-center gap-1 mt-1.5">
+              <p
+                className={`text-xs truncate ${
+                  isDarkCard ? "text-gray-500" : "text-slate-400"
+                }`}
+              >
+                â {task.assignedTo.name || task.assignedTo.email}
+              </p>
+              {(task.additionalAssignees?.length ?? 0) > 0 && (
+                <span
+                  className={`inline-flex items-center justify-center text-[10px] font-medium rounded-full px-1.5 py-0.5 ${
+                    isDarkCard
+                      ? "bg-gray-700 text-gray-300"
+                      : "bg-slate-100 text-slate-500"
+                  }`}
+                >
+                  +{task.additionalAssignees!.length}
+                </span>
+              )}
+            </div>
           )}
         </div>
       </div>
