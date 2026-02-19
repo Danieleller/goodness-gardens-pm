@@ -4,13 +4,12 @@ import { useState, useCallback, useMemo } from "react";
 import {
   DndContext,
   DragOverlay,
-  closestCenter,
+  closestCorners,
   PointerSensor,
   useSensor,
   useSensors,
   type DragStartEvent,
   type DragEndEvent,
-  type DragOverEvent,
 } from "@dnd-kit/core";
 import { KanbanColumn } from "./KanbanColumn";
 import { TaskCard } from "./TaskCard";
@@ -103,7 +102,7 @@ export function KanbanBoard({
       if (columnIds.has(overId)) {
         targetColumnId = overId;
       } else {
-        // overId is a task — find its column
+        // overId is a task â find its column
         const col = findColumnForTask(overId);
         if (!col) return;
         targetColumnId = col;
@@ -136,10 +135,10 @@ export function KanbanBoard({
 
         setTasks((prev) =>
           prev.map((t) =>
-            t.id === taskId ? { ...t, category: newCategory as any } : t
+            t.id === taskId ? { ...t, category: newCategory } : t
           )
         );
-        await updateTask(taskId, { category: newCategory as any });
+        await updateTask(taskId, { category: newCategory });
       }
     },
     [view, tasks, users, columnIds, findColumnForTask]
@@ -251,7 +250,7 @@ export function KanbanBoard({
         <div className="flex-1 overflow-x-auto p-4">
           <DndContext
             sensors={sensors}
-            collisionDetection={closestCenter}
+            collisionDetection={closestCorners}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
           >
