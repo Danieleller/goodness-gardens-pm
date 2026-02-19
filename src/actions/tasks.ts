@@ -1,13 +1,13 @@
 "use server";
 
 import { db } from "@/db";
-import { tasks, auditLogs, notifications, users } from "@/db/schema";
+import { tasks, auditLogs, notifications, users, taskAssignees, taskGroupAssignments } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, like, or, desc, and, SQL } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { sendAssignmentEmail } from "@/lib/email";
 
-// ── Create Task ────────────────────────────────────────
+// ââ Create Task ââââââââââââââââââââââââââââââââââââââââ
 export async function createTask(data: {
   title: string;
   description?: string;
@@ -16,6 +16,8 @@ export async function createTask(data: {
   assignedToUserId?: string;
   category?: string;
   status?: "Backlog" | "Doing" | "Blocked" | "Done";
+  additionalAssigneeIds?: string[];
+  assignedGroupIds?: string[];
 }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -59,11 +61,38 @@ export async function createTask(data: {
     );
   }
 
+  // Additional assignees
+  if (data.additionalAssigneeIds && data.additionalAssigneeIds.length > 0) {
+    for (const userId of data.additionalAssigneeIds) {
+      if (userId !== data.assignedToUserId) {
+        await db.insert(taskAssignees).values({
+          taskId: id,
+          userId,
+          assignedByUserId: session.user.id,
+          assignedAt: now,
+        });
+        await createAssignmentNotification(id, data.title, null, userId, session.user.id);
+      }
+    }
+  }
+
+  // Group assignments
+  if (data.assignedGroupIds && data.assignedGroupIds.length > 0) {
+    for (const groupId of data.assignedGroupIds) {
+      await db.insert(taskGroupAssignments).values({
+        taskId: id,
+        groupId,
+        assignedByUserId: session.user.id,
+        assignedAt: now,
+      });
+    }
+  }
+
   revalidatePath("/");
   return { id };
 }
 
-// ── Update Task ────────────────────────────────────────
+// ââ Update Task ââââââââââââââââââââââââââââââââââââââââ
 export async function updateTask(
   taskId: string,
   data: Partial<{
@@ -142,7 +171,7 @@ export async function updateTask(
   revalidatePath("/");
 }
 
-// ── Delete Task ────────────────────────────────────────
+// ââ Delete Task ââââââââââââââââââââââââââââââââââââââââ
 export async function deleteTask(taskId: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -150,7 +179,7 @@ export async function deleteTask(taskId: string) {
   revalidatePath("/");
 }
 
-// ── Search Tasks ───────────────────────────────────────
+// ââ Search Tasks âââââââââââââââââââââââââââââââââââââââ
 export async function searchTasks(query: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -168,7 +197,7 @@ export async function searchTasks(query: string) {
   return results;
 }
 
-// ── Get Task with Audit Trail ──────────────────────────
+// ââ Get Task with Audit Trail ââââââââââââââââââââââââââ
 export async function getTaskWithAudit(taskId: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -182,13 +211,19 @@ export async function getTaskWithAudit(taskId: string) {
         orderBy: desc(auditLogs.createdAt),
         with: { user: true },
       },
+      additionalAssignees: {
+        with: { user: true },
+      },
+      groupAssignments: {
+        with: { group: true },
+      },
     },
   });
 
   return task;
 }
 
-// ── Get All Tasks ──────────────────────────────────────
+// ââ Get All Tasks ââââââââââââââââââââââââââââââââââââââ
 export async function getTasks(filters?: {
   assignedToUserId?: string;
   category?: string;
@@ -210,21 +245,128 @@ export async function getTasks(filters?: {
 
   const result = await db.query.tasks.findMany({
     where: conditions.length > 0 ? and(...conditions) : undefined,
-    with: { assignedTo: true, createdBy: true },
+    with: {
+      assignedTo: true,
+      createdBy: true,
+      additionalAssignees: { with: { user: true } },
+      groupAssignments: { with: { group: true } },
+    },
     orderBy: desc(tasks.updatedAt),
   });
 
   return result;
 }
 
-// ── Get Users ──────────────────────────────────────────
+// ââ Get Users ââââââââââââââââââââââââââââââââââââââââââ
 export async function getUsers() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
   return db.query.users.findMany();
 }
 
-// ── Notification helpers ───────────────────────────────
+// ââ Multi-Assign Functions âââââââââââââââââââââââââââââ
+export async function assignTaskToUsers(taskId: string, userIds: string[]) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const task = await db.query.tasks.findFirst({ where: eq(tasks.id, taskId) });
+  if (!task) throw new Error("Task not found");
+
+  const now = new Date();
+  for (const userId of userIds) {
+    // Skip if this user is the primary assignee
+    if (userId === task.assignedToUserId) continue;
+
+    // Check if already assigned
+    const existing = await db.query.taskAssignees.findFirst({
+      where: and(eq(taskAssignees.taskId, taskId), eq(taskAssignees.userId, userId)),
+    });
+    if (existing) continue;
+
+    await db.insert(taskAssignees).values({
+      taskId,
+      userId,
+      assignedByUserId: session.user.id,
+      assignedAt: now,
+    });
+
+    await createAssignmentNotification(taskId, task.title, null, userId, session.user.id);
+  }
+
+  // Audit log
+  await db.insert(auditLogs).values({
+    taskId,
+    userId: session.user.id,
+    action: "assignment_changed" as any,
+    newValue: `Added ${userIds.length} assignee(s)`,
+    createdAt: now,
+  });
+
+  revalidatePath("/");
+  revalidatePath(`/tasks/${taskId}`);
+}
+
+export async function unassignTaskFromUser(taskId: string, userId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await db
+    .delete(taskAssignees)
+    .where(and(eq(taskAssignees.taskId, taskId), eq(taskAssignees.userId, userId)));
+
+  await db.insert(auditLogs).values({
+    taskId,
+    userId: session.user.id,
+    action: "assignment_changed" as any,
+    newValue: `Removed an assignee`,
+    createdAt: new Date(),
+  });
+
+  revalidatePath("/");
+  revalidatePath(`/tasks/${taskId}`);
+}
+
+export async function assignTaskToGroup(taskId: string, groupId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const existing = await db.query.taskGroupAssignments.findFirst({
+    where: and(
+      eq(taskGroupAssignments.taskId, taskId),
+      eq(taskGroupAssignments.groupId, groupId)
+    ),
+  });
+  if (existing) return;
+
+  await db.insert(taskGroupAssignments).values({
+    taskId,
+    groupId,
+    assignedByUserId: session.user.id,
+    assignedAt: new Date(),
+  });
+
+  revalidatePath("/");
+  revalidatePath(`/tasks/${taskId}`);
+}
+
+export async function unassignTaskFromGroup(taskId: string, groupId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  await db
+    .delete(taskGroupAssignments)
+    .where(
+      and(
+        eq(taskGroupAssignments.taskId, taskId),
+        eq(taskGroupAssignments.groupId, groupId)
+      )
+    );
+
+  revalidatePath("/");
+  revalidatePath(`/tasks/${taskId}`);
+}
+
+// ââ Notification helpers âââââââââââââââââââââââââââââââ
 async function createAssignmentNotification(
   taskId: string,
   taskTitle: string,
@@ -268,7 +410,7 @@ async function createAssignmentNotification(
   }
 }
 
-// ── Notifications ──────────────────────────────────────
+// ââ Notifications ââââââââââââââââââââââââââââââââââââââ
 export async function getNotifications() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
