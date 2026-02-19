@@ -18,7 +18,7 @@ type TaskWithRelations = Task & {
   createdBy: User;
 };
 
-export function TaskCard({ task }: { task: TaskWithRelations }) {
+export function TaskCard({ task, isRocksColumn = false }: { task: TaskWithRelations; isRocksColumn?: boolean }) {
   const {
     attributes,
     listeners,
@@ -39,22 +39,32 @@ export function TaskCard({ task }: { task: TaskWithRelations }) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`group bg-white rounded-lg border border-slate-200 p-3 shadow-sm hover:shadow-md transition-shadow ${
+      className={`group rounded-lg border p-3 shadow-sm hover:shadow-md transition-shadow ${
         isDragging ? "opacity-50 shadow-lg" : ""
+      } ${
+        isRocksColumn
+          ? "bg-gray-900 border-gray-700"
+          : "bg-white border-slate-200"
       }`}
     >
       <div className="flex items-start gap-2">
         <button
           {...attributes}
           {...listeners}
-          className="mt-0.5 text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing shrink-0"
+          className={`mt-0.5 cursor-grab active:cursor-grabbing shrink-0 ${
+            isRocksColumn ? "text-gray-600 hover:text-gray-400" : "text-slate-300 hover:text-slate-500"
+          }`}
         >
           <GripVertical className="w-4 h-4" />
         </button>
         <div className="flex-1 min-w-0">
           <Link
             href={`/tasks/${task.id}`}
-            className="text-sm font-medium text-slate-900 hover:text-[#1a3a2a] line-clamp-2 block"
+            className={`text-sm font-medium line-clamp-2 block ${
+              isRocksColumn
+                ? "text-white hover:text-gray-300"
+                : "text-slate-900 hover:text-[#1a3a2a]"
+            }`}
           >
             {task.title}
           </Link>
@@ -66,7 +76,7 @@ export function TaskCard({ task }: { task: TaskWithRelations }) {
             {task.dueDate && (
               <span
                 className={`inline-flex items-center gap-1 text-xs ${
-                  overdue ? "text-red-600 font-medium" : "text-slate-500"
+                  overdue ? "text-red-600 font-medium" : isRocksColumn ? "text-gray-400" : "text-slate-500"
                 }`}
               >
                 <Calendar className="w-3 h-3" />
@@ -75,7 +85,9 @@ export function TaskCard({ task }: { task: TaskWithRelations }) {
             )}
           </div>
           {task.assignedTo && (
-            <p className="text-xs text-slate-400 mt-1.5 truncate">
+            <p className={`text-xs mt-1.5 truncate ${
+              isRocksColumn ? "text-gray-500" : "text-slate-400"
+            }`}>
               → {task.assignedTo.name || task.assignedTo.email}
             </p>
           )}

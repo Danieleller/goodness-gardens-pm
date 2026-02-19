@@ -14,7 +14,7 @@ export async function createTask(data: {
   priority?: "low" | "medium" | "high";
   dueDate?: string;
   assignedToUserId?: string;
-  category?: "Sales" | "ProductDev" | "Operations" | "Finance" | "Other";
+  category?: string;
   status?: "Backlog" | "Doing" | "Blocked" | "Done";
 }) {
   const session = await auth();
@@ -30,7 +30,7 @@ export async function createTask(data: {
     priority: data.priority || "medium",
     dueDate: data.dueDate || null,
     assignedToUserId: data.assignedToUserId || null,
-    category: data.category || "Operations",
+    category: (data.category || "Operations") as any,
     status: data.status || "Backlog",
     createdByUserId: session.user.id,
     createdAt: now,
@@ -70,7 +70,7 @@ export async function updateTask(
     priority: "low" | "medium" | "high";
     dueDate: string | null;
     assignedToUserId: string | null;
-    category: "Sales" | "ProductDev" | "Operations" | "Finance" | "Other";
+    category: string;
     status: "Backlog" | "Doing" | "Blocked" | "Done";
   }>
 ) {
@@ -110,7 +110,7 @@ export async function updateTask(
 
   await db
     .update(tasks)
-    .set({ ...data, updatedAt: now })
+    .set({ ...data, updatedAt: now } as any)
     .where(eq(tasks.id, taskId));
 
   // Audit logs

@@ -18,32 +18,40 @@ export function KanbanColumn({
   title,
   tasks,
   color,
+  isRocks = false,
 }: {
   id: string;
   title: string;
   tasks: TaskWithRelations[];
   color?: string;
+  isRocks?: boolean;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
   return (
     <div
-      className={`flex flex-col min-w-[280px] max-w-[320px] shrink-0 ${
-        color || "bg-slate-50 border-slate-200"
-      } border rounded-xl`}
+      className={`flex flex-col min-w-[280px] max-w-[320px] shrink-0 border rounded-xl ${
+        isRocks ? "bg-black border-black" : color || "bg-slate-50 border-slate-200"
+      }`}
     >
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-inherit">
-        <h3 className="text-sm font-semibold text-slate-700 truncate">
+      <div className={`flex items-center justify-between px-3 py-2.5 border-b ${
+        isRocks ? "border-gray-700" : "border-inherit"
+      }`}>
+        <h3 className={`text-sm font-semibold truncate ${
+          isRocks ? "text-white" : "text-slate-700"
+        }`}>
           {title}
         </h3>
-        <span className="text-xs font-medium text-slate-400 bg-white rounded-full px-2 py-0.5">
+        <span className={`text-xs font-medium rounded-full px-2 py-0.5 ${
+          isRocks ? "bg-gray-800 text-gray-300" : "bg-white text-slate-400"
+        }`}>
           {tasks.length}
         </span>
       </div>
       <div
         ref={setNodeRef}
         className={`flex-1 p-2 space-y-2 overflow-y-auto min-h-[120px] transition-colors ${
-          isOver ? "bg-green-50/50" : ""
+          isOver ? (isRocks ? "bg-gray-900" : "bg-green-50/50") : ""
         }`}
       >
         <SortableContext
@@ -51,11 +59,13 @@ export function KanbanColumn({
           strategy={verticalListSortingStrategy}
         >
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} />
+            <TaskCard key={task.id} task={task} isRocksColumn={isRocks} />
           ))}
         </SortableContext>
         {tasks.length === 0 && (
-          <div className="text-center text-xs text-slate-400 py-8">
+          <div className={`text-center text-xs py-8 ${
+            isRocks ? "text-gray-500" : "text-slate-400"
+          }`}>
             Drop tasks here
           </div>
         )}

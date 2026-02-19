@@ -170,9 +170,41 @@ export const categories = sqliteTable("categories", {
 
 export const categoriesRelations = relations(categories, ({}) => ({}));
 
+// ── Rocks (Quarterly Goals) ─────────────────────────────
+export const rocks = sqliteTable("rocks", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text("title").notNull(),
+  ownerUserId: text("owner_user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  quarter: text("quarter").notNull(), // e.g., "Q1-2026"
+  rockNumber: integer("rock_number").notNull().default(1),
+  status: text("status", {
+    enum: ["on_track", "off_track", "complete", "at_risk", "not_started"],
+  })
+    .notNull()
+    .default("not_started"),
+  progress: integer("progress").notNull().default(0), // 0-100
+  notes: text("notes"),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export const rocksRelations = relations(rocks, ({ one }) => ({
+  owner: one(users, {
+    fields: [rocks.ownerUserId],
+    references: [users.id],
+  }),
+}));
+
 // ── Type exports ───────────────────────────────────────
 export type User = typeof users.$inferSelect;
 export type Task = typeof tasks.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 export type Category = typeof categories.$inferSelect;
+export type Rock = typeof rocks.$inferSelect;
