@@ -1,10 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #faf8f5;
+  --foreground: #2d2520;
   --brand: #1a3a2a;
   --brand-light: #2d5a42;
+  --brand-accent: #d4c4a8;
+  --border: #e8e0d4;
   color-scheme: light;
 }
 
@@ -18,25 +20,26 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Force dark text on form inputs regardless of OS dark mode */
-/* Note: buttons excluded so Tailwind text-white works on colored buttons */
 input,
 textarea,
 select {
-  color: #1e293b;
+  color: #2d2520;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #94a3b8;
+  color: #a8a09a;
 }
 
 select option {
-  color: #1e293b;
-  background: #ffffff;
+  color: #2d2520;
+  background: #faf8f5;
 }
 
 /* Smooth global transitions */
@@ -44,90 +47,128 @@ select option {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* iOS Glass Morphism Styles */
+/* âââ Glass Morphism âââ */
+
 .glass {
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.05),
-    0 4px 12px rgba(0, 0, 0, 0.03),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    0 1px 2px rgba(0, 0, 0, 0.03),
+    0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: all 180ms ease-out;
 }
 
 .glass:hover {
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 255, 255, 0.78);
   box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    0 8px 24px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    0 2px 6px rgba(0, 0, 0, 0.05),
+    0 6px 20px rgba(0, 0, 0, 0.03);
+  transform: translateY(-1px);
 }
 
 .glass-dark {
-  background: rgba(0, 0, 0, 0.72);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(26, 58, 42, 0.85);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: all 180ms ease-out;
 }
 
 .glass-dark:hover {
-  background: rgba(0, 0, 0, 0.78);
+  background: rgba(26, 58, 42, 0.92);
   box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(-1px);
 }
 
 .glass-rocks-column {
-  background: rgba(0, 0, 0, 0.88);
-  backdrop-filter: blur(24px) saturate(200%);
-  -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(20, 20, 18, 0.92);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-/* Priority color indicators for task cards */
-.priority-high {
-  border-left: 3px solid #ef4444;
+/* âââ Status Border Indicators âââ */
+
+.status-border-backlog {
+  border-left: 3px solid #a8a29e;
 }
 
-.priority-medium {
-  border-left: 3px solid #f59e0b;
+.status-border-doing {
+  border-left: 3px solid #10b981;
 }
 
-.priority-low {
-  border-left: 3px solid #3b82f6;
+.status-border-blocked {
+  border-left: 3px solid #d97706;
 }
 
-/* Smooth progress bar animation */
+.status-border-done {
+  border-left: 3px solid #78716c;
+}
+
+/* âââ Progress Bars âââ */
+
 .progress-bar {
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Status color progress bars */
 .progress-emerald {
   background: linear-gradient(90deg, #10b981, #34d399);
 }
 
 .progress-amber {
-  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  background: linear-gradient(90deg, #d97706, #f59e0b);
 }
 
 .progress-red {
-  background: linear-gradient(90deg, #ef4444, #f87171);
+  background: linear-gradient(90deg, #dc2626, #ef4444);
 }
 
-/* Rocks header gradient transition */
+/* âââ Rocks Section âââ */
+
 .rocks-header-gradient {
-  background: linear-gradient(to bottom, #000000 0%, #0a0a0a 100%);
+  background: linear-gradient(to bottom, #141412 0%, #1c1c18 100%);
 }
 
-/* Kanban column subtle background */
-.kanban-column {
-  background: linear-gradient(180deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.4) 100%);
+/* âââ Transition Utilities âââ */
+
+.transition-smooth {
+  transition: all 150ms ease-out;
+}
+
+.transition-gentle {
+  transition: all 200ms ease-in-out;
+}
+
+.hover-lift {
+  transition: all 150ms ease-out;
+}
+
+.hover-lift:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  transform: translateY(-1px);
+}
+
+/* âââ Snapshot Cards âââ */
+
+.snapshot-card {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  transition: all 150ms ease-out;
+}
+
+.snapshot-card:hover {
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
