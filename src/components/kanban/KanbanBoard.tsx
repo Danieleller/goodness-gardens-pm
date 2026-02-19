@@ -51,6 +51,26 @@ export function KanbanBoard({
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
 
+  // Apply filters
+  const filteredTasks = tasks.filter((t) => {
+    if (statusFilter && t.status !== statusFilter) return false;
+    if (priorityFilter && t.priority !== priorityFilter) return false;
+    return true;
+  });
+
+  // Build column IDs set for resolving drop targets
+  const columnIds = useMemo(() => {
+    if (view === "person") {
+      const ids = new Set<string>(["unassigned"]);
+      users.forEach((u) => ids.add(u.id));
+      return ids;
+    } else {
+      const ids = new Set<string>();
+      categories.forEach((c) => ids.add(c.name));
+      return ids;
+    }
+  }, [view, users, categories]);
+
   // Custom collision detection: try pointerWithin first (detects empty columns
   // when the cursor is inside their bounds), then fall back to closestCorners
   // for fine-grained positioning among task cards within a column.
@@ -78,26 +98,6 @@ export function KanbanBoard({
     },
     [columnIds]
   );
-
-  // Apply filters
-  const filteredTasks = tasks.filter((t) => {
-    if (statusFilter && t.status !== statusFilter) return false;
-    if (priorityFilter && t.priority !== priorityFilter) return false;
-    return true;
-  });
-
-  // Build column IDs set for resolving drop targets
-  const columnIds = useMemo(() => {
-    if (view === "person") {
-      const ids = new Set<string>(["unassigned"]);
-      users.forEach((u) => ids.add(u.id));
-      return ids;
-    } else {
-      const ids = new Set<string>();
-      categories.forEach((c) => ids.add(c.name));
-      return ids;
-    }
-  }, [view, users, categories]);
 
   // Find which column a task belongs to
   const findColumnForTask = useCallback(
