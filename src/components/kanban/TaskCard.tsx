@@ -4,7 +4,6 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Badge } from "@/components/ui/badge";
 import {
-  PRIORITY_COLORS,
   STATUS_COLORS,
   formatDate,
   isOverdue,
@@ -59,7 +58,7 @@ export function TaskCard({
       className={`group rounded-xl p-3 transition-all ${
         isDragging ? "opacity-50 scale-[1.02]" : ""
       } ${isDarkCard ? "glass-dark" : "glass"} ${
-        !isDarkCard ? `priority-${task.priority}` : ""
+        ""
       }`}
     >
       <div className="flex items-start gap-2">
@@ -86,9 +85,6 @@ export function TaskCard({
             {task.title}
           </Link>
           <div className="flex flex-wrap items-center gap-1.5 mt-2">
-            <Badge className={PRIORITY_COLORS[task.priority]}>
-              {task.priority}
-            </Badge>
             <Badge className={STATUS_COLORS[task.status]}>{task.status}</Badge>
             {task.dueDate && (
               <span
@@ -112,7 +108,7 @@ export function TaskCard({
                   isDarkCard ? "text-gray-500" : "text-slate-400"
                 }`}
               >
-                â {task.assignedTo.name || task.assignedTo.email}
+                \u2192 {task.assignedTo.name || task.assignedTo.email}
               </p>
               {(task.additionalAssignees?.length ?? 0) > 0 && (
                 <span
@@ -132,4 +128,3 @@ export function TaskCard({
     </div>
   );
 }
-
