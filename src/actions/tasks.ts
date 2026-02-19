@@ -98,11 +98,11 @@ export async function updateTask(
   data: Partial<{
     title: string;
     description: string;
-    priority: "low" | "medium" | "high";
+    priority: string;
     dueDate: string | null;
     assignedToUserId: string | null;
     category: string;
-    status: "Backlog" | "Doing" | "Blocked" | "Done";
+    status: string;
   }>
 ) {
   const session = await auth();
