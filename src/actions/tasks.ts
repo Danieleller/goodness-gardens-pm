@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { tasks, auditLogs, notifications, users, taskAssignees, taskGroupAssignments } from "@/db/schema";
+import { tasks, auditLogs, notifications, users, taskAssignees, taskGroupAssignments, subtasks } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { eq, like, or, desc, and, SQL } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -450,4 +450,62 @@ export async function markAllNotificationsRead() {
     );
 
   revalidatePath("/");
+}
+
+// ââ Sub-tasks âââââââââââââââââââââââââââââââââââââââââ
+export async function createSubtask(taskId: string, title: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const existing = await db.query.subtasks.findMany({
+    where: eq(subtasks.taskId, taskId),
+  });
+  const maxOrder = existing.reduce((max, s) => Math.max(max, s.sortOrder), -1);
+
+  const id = crypto.randomUUID();
+  await db.insert(subtasks).values({
+    id,
+    taskId,
+    title,
+    completed: false,
+    sortOrder: maxOrder + 1,
+    createdAt: new Date(),
+  });
+
+  revalidatePath("/");
+  revalidatePath(`/tasks/${taskId}`);
+  return { id };
+}
+
+export async function toggleSubtask(subtaskId: string, completed: boolean) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const subtask = await db.query.subtasks.findFirst({
+    where: eq(subtasks.id, subtaskId),
+  });
+  if (!subtask) throw new Error("Subtask not found");
+
+  await db
+    .update(subtasks)
+    .set({ completed })
+    .where(eq(subtasks.id, subtaskId));
+
+  revalidatePath("/");
+  revalidatePath(`/tasks/${subtask.taskId}`);
+}
+
+export async function deleteSubtask(subtaskId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const subtask = await db.query.subtasks.findFirst({
+    where: eq(subtasks.id, subtaskId),
+  });
+  if (!subtask) throw new Error("Subtask not found");
+
+  await db.delete(subtasks).where(eq(subtasks.id, subtaskId));
+
+  revalidatePath("/");
+  revalidatePath(`/tasks/${subtask.taskId}`);
 }
