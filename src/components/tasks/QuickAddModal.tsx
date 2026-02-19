@@ -4,26 +4,51 @@ import { useState, useTransition } from "react";
 import { Modal } from "@/components/ui/modal";
 import { createTask } from "@/actions/tasks";
 import { STATUSES, PRIORITIES } from "@/lib/utils";
-import type { User, Category } from "@/db/schema";
+import { X } from "lucide-react";
+import type { User, Category, UserGroup, UserGroupMember } from "@/db/schema";
+
+type GroupWithMembers = UserGroup & {
+  members: (UserGroupMember & { user: User })[];
+};
 
 export function QuickAddModal({
   open,
   onClose,
   users,
   categories,
+  groups = [],
 }: {
   open: boolean;
   onClose: () => void;
   users: User[];
   categories: Category[];
+  groups?: GroupWithMembers[];
 }) {
   const [isPending, startTransition] = useTransition();
   const [title, setTitle] = useState("");
   const [assignee, setAssignee] = useState("");
+  const [additionalAssignees, setAdditionalAssignees] = useState<string[]>([]);
+  const [assignedGroups, setAssignedGroups] = useState<string[]>([]);
   const [category, setCategory] = useState<string>(categories[0]?.name || "Operations");
   const [priority, setPriority] = useState<string>("medium");
   const [status, setStatus] = useState<string>("Backlog");
   const [dueDate, setDueDate] = useState("");
+
+  const toggleAssignee = (userId: string) => {
+    setAdditionalAssignees((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    );
+  };
+
+  const toggleGroup = (groupId: string) => {
+    setAssignedGroups((prev) =>
+      prev.includes(groupId)
+        ? prev.filter((id) => id !== groupId)
+        : [...prev, groupId]
+    );
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,9 +62,13 @@ export function QuickAddModal({
         priority: priority as any,
         status: status as any,
         dueDate: dueDate || undefined,
+        additionalAssigneeIds: additionalAssignees.length > 0 ? additionalAssignees : undefined,
+        assignedGroupIds: assignedGroups.length > 0 ? assignedGroups : undefined,
       });
       setTitle("");
       setAssignee("");
+      setAdditionalAssignees([]);
+      setAssignedGroups([]);
       setCategory(categories[0]?.name || "Operations");
       setPriority("medium");
       setStatus("Backlog");
@@ -68,7 +97,7 @@ export function QuickAddModal({
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Assign to
+              Primary Assignee
             </label>
             <select
               value={assignee}
@@ -135,6 +164,58 @@ export function QuickAddModal({
             </select>
           </div>
         </div>
+
+        {/* Additional Assignees */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">
+            Additional Assignees
+          </label>
+          <div className="flex flex-wrap gap-1.5">
+            {users
+              .filter((u) => u.id !== assignee)
+              .map((u) => (
+                <button
+                  key={u.id}
+                  type="button"
+                  onClick={() => toggleAssignee(u.id)}
+                  className={`px-2.5 py-1 rounded-full text-xs border transition-all ${
+                    additionalAssignees.includes(u.id)
+                      ? "bg-[#1a3a2a] text-white border-[#1a3a2a]"
+                      : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"
+                  }`}
+                >
+                  {additionalAssignees.includes(u.id) && "â "}
+                  {u.name || u.email}
+                </button>
+              ))}
+          </div>
+        </div>
+
+        {/* Assign to Groups */}
+        {groups.length > 0 && (
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">
+              Assign to Groups
+            </label>
+            <div className="flex flex-wrap gap-1.5">
+              {groups.map((g) => (
+                <button
+                  key={g.id}
+                  type="button"
+                  onClick={() => toggleGroup(g.id)}
+                  className={`px-2.5 py-1 rounded-full text-xs border transition-all ${
+                    assignedGroups.includes(g.id)
+                      ? "bg-[#1a3a2a] text-white border-[#1a3a2a]"
+                      : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"
+                  }`}
+                >
+                  {assignedGroups.includes(g.id) && "â "}
+                  {g.name} ({g.members.length})
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
