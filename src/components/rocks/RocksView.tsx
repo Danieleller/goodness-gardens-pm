@@ -130,7 +130,7 @@ export function RocksView({
   return (
     <div className="flex-1 overflow-y-auto">
       {/* Header */}
-      <div className="bg-black text-white px-6 py-5">
+      <div className="rocks-header-gradient text-white px-6 py-5">
         <div className="max-w-5xl mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
@@ -188,7 +188,7 @@ export function RocksView({
               </div>
               <div className="w-full bg-gray-700 rounded-full h-2">
                 <div
-                  className="bg-white rounded-full h-2 transition-all duration-500"
+                  className="progress-emerald rounded-full h-2 progress-bar"
                   style={{ width: `${totalRocks > 0 ? (completedRocks / totalRocks) * 100 : 0}%` }}
                 />
               </div>
@@ -266,7 +266,7 @@ export function RocksView({
               <div className="flex-1 text-left">
                 <p className="text-sm font-semibold text-slate-900">Unassigned</p>
                 <p className="text-xs text-slate-400">
-                  {unassignedRocks.length} rock{unassignedRocks.length !== 1 ? "s" : ""} · {unassignedRocks.filter((r) => r.status === "complete").length} complete
+                  {unassignedRocks.length} rock{unassignedRocks.length !== 1 ? "s" : ""} Â· {unassignedRocks.filter((r) => r.status === "complete").length} complete
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -403,7 +403,7 @@ export function RocksView({
                 <div className="flex-1 text-left">
                   <p className="text-sm font-semibold text-slate-900">{user.name || user.email}</p>
                   <p className="text-xs text-slate-400">
-                    {userRocks.length} rock{userRocks.length !== 1 ? "s" : ""} · {userCompleted} complete
+                    {userRocks.length} rock{userRocks.length !== 1 ? "s" : ""} Â· {userCompleted} complete
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
