@@ -19,9 +19,15 @@ export default async function SettingsPage() {
     redirect("/");
   }
 
-  const [allUsers, allCategories] = await Promise.all([
+  const [allUsers, allCategories, allGroups] = await Promise.all([
     db.query.users.findMany(),
     db.query.categories.findMany({ orderBy: asc(categories.sortOrder) }),
+    db.query.userGroups.findMany({
+      with: {
+        members: { with: { user: true } },
+        createdBy: true,
+      },
+    }),
   ]);
 
   return (
@@ -29,6 +35,7 @@ export default async function SettingsPage() {
       currentUser={dbUser}
       users={allUsers}
       categories={allCategories}
+      groups={allGroups as any}
     />
   );
 }
