@@ -53,9 +53,7 @@ export const tasks = sqliteTable("tasks", {
   assignedToUserId: text("assigned_to_user_id").references(() => users.id, {
     onDelete: "set null",
   }),
-  category: text("category", {
-    enum: ["Sales", "ProductDev", "Operations", "Finance", "Other"],
-  })
+  category: text("category")
     .notNull()
     .default("Operations"),
   status: text("status", {
