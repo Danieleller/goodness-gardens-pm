@@ -57,8 +57,10 @@ export function TaskCard({
       ref={setNodeRef}
       style={style}
       className={`group rounded-xl p-3 transition-all ${
-        isDragging ? "opacity-50 scale-[1.02]" : "hover:shadow-lg"
-      } ${isDarkCard ? "glass-dark" : "glass"}`}
+        isDragging ? "opacity-50 scale-[1.02]" : ""
+      } ${isDarkCard ? "glass-dark" : "glass"} ${
+        !isDarkCard ? `priority-${task.priority}` : ""
+      }`}
     >
       <div className="flex items-start gap-2">
         <button
@@ -130,3 +132,4 @@ export function TaskCard({
     </div>
   );
 }
+
