@@ -10,6 +10,13 @@ import {
   deleteCategory,
 } from "@/actions/admin";
 import {
+  createUserGroup,
+  updateUserGroup,
+  deleteUserGroup,
+  addGroupMember,
+  removeGroupMember,
+} from "@/actions/groups";
+import {
   ArrowLeft,
   Users,
   FolderOpen,
@@ -21,10 +28,18 @@ import {
   Shield,
   ShieldCheck,
   User as UserIcon,
+  UsersRound,
+  UserPlus,
+  UserMinus,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { User, Category } from "@/db/schema";
+import type { User, Category, UserGroup, UserGroupMember } from "@/db/schema";
+
+type GroupWithMembers = UserGroup & {
+  members: (UserGroupMember & { user: User })[];
+  createdBy: User;
+};
 
 const ROLE_LABELS: Record<string, string> = {
   admin: "Admin",
@@ -53,13 +68,15 @@ export function SettingsClient({
   currentUser,
   users: initialUsers,
   categories: initialCategories,
+  groups: initialGroups = [],
 }: {
   currentUser: User;
   users: User[];
   categories: Category[];
+  groups?: GroupWithMembers[];
 }) {
   const router = useRouter();
-  const [tab, setTab] = useState<"users" | "categories">("users");
+  const [tab, setTab] = useState<"users" | "categories" | "groups">("users");
   const [isPending, startTransition] = useTransition();
 
   // User state
@@ -79,6 +96,18 @@ export function SettingsClient({
   const [editingCat, setEditingCat] = useState<string | null>(null);
   const [editCatName, setEditCatName] = useState("");
   const [catError, setCatError] = useState("");
+
+  // Group state
+  const [showAddGroup, setShowAddGroup] = useState(false);
+  const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupDesc, setNewGroupDesc] = useState("");
+  const [newGroupColor, setNewGroupColor] = useState("bg-slate-50 border-slate-200");
+  const [newGroupMembers, setNewGroupMembers] = useState<string[]>([]);
+  const [editingGroup, setEditingGroup] = useState<string | null>(null);
+  const [editGroupName, setEditGroupName] = useState("");
+  const [groupError, setGroupError] = useState("");
+  const [expandedGroup, setExpandedGroup] = useState<string | null>(null);
+  const [addMemberGroupId, setAddMemberGroupId] = useState<string | null>(null);
 
   const handleInviteUser = () => {
     if (!inviteEmail.trim() || !inviteName.trim()) return;
@@ -164,6 +193,77 @@ export function SettingsClient({
     });
   };
 
+  // ââ Group handlers ââââââââââââââââââââââââââââââââââ
+  const handleAddGroup = () => {
+    if (!newGroupName.trim()) return;
+    setGroupError("");
+    startTransition(async () => {
+      try {
+        await createUserGroup({
+          name: newGroupName.trim(),
+          description: newGroupDesc.trim() || undefined,
+          color: newGroupColor,
+          memberIds: newGroupMembers,
+        });
+        setNewGroupName("");
+        setNewGroupDesc("");
+        setNewGroupColor("bg-slate-50 border-slate-200");
+        setNewGroupMembers([]);
+        setShowAddGroup(false);
+        router.refresh();
+      } catch (e: any) {
+        setGroupError(e.message || "Failed to create group");
+      }
+    });
+  };
+
+  const handleRenameGroup = (groupId: string) => {
+    if (!editGroupName.trim()) return;
+    startTransition(async () => {
+      try {
+        await updateUserGroup(groupId, { name: editGroupName.trim() });
+        setEditingGroup(null);
+        router.refresh();
+      } catch (e: any) {
+        setGroupError(e.message);
+      }
+    });
+  };
+
+  const handleDeleteGroup = (groupId: string, groupName: string) => {
+    if (!confirm(`Delete "${groupName}"? Task assignments to this group will be removed.`)) return;
+    startTransition(async () => {
+      try {
+        await deleteUserGroup(groupId);
+        router.refresh();
+      } catch (e: any) {
+        setGroupError(e.message);
+      }
+    });
+  };
+
+  const handleAddMember = (groupId: string, userId: string) => {
+    startTransition(async () => {
+      try {
+        await addGroupMember(groupId, userId);
+        router.refresh();
+      } catch (e: any) {
+        setGroupError(e.message);
+      }
+    });
+  };
+
+  const handleRemoveMember = (groupId: string, userId: string) => {
+    startTransition(async () => {
+      try {
+        await removeGroupMember(groupId, userId);
+        router.refresh();
+      } catch (e: any) {
+        setGroupError(e.message);
+      }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
@@ -205,6 +305,17 @@ export function SettingsClient({
           >
             <FolderOpen className="w-4 h-4" />
             Categories
+          </button>
+          <button
+            onClick={() => setTab("groups")}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              tab === "groups"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
+            }`}
+          >
+            <UsersRound className="w-4 h-4" />
+            Groups
           </button>
         </div>
 
@@ -522,6 +633,237 @@ export function SettingsClient({
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {/* Groups Tab */}
+        {tab === "groups" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-slate-900">
+                User Groups
+              </h2>
+              <button
+                onClick={() => setShowAddGroup(true)}
+                className="flex items-center gap-1.5 bg-[#1a3a2a] hover:bg-[#1a3a2a]/90 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                New Group
+              </button>
+            </div>
+
+            {groupError && (
+              <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-2">
+                {groupError}
+              </div>
+            )}
+
+            {/* Add group form */}
+            {showAddGroup && (
+              <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-slate-700">New Group</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Name</label>
+                    <input
+                      type="text"
+                      value={newGroupName}
+                      onChange={(e) => setNewGroupName(e.target.value)}
+                      placeholder="e.g. Farm Team"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Description</label>
+                    <input
+                      type="text"
+                      value={newGroupDesc}
+                      onChange={(e) => setNewGroupDesc(e.target.value)}
+                      placeholder="Optional description"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Color</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {COLOR_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => setNewGroupColor(opt.value)}
+                        className={`px-3 py-1.5 rounded-lg text-xs border-2 transition-all ${opt.value} ${
+                          newGroupColor === opt.value ? "ring-2 ring-[#1a3a2a] ring-offset-1" : ""
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">Members</label>
+                  <div className="flex flex-wrap gap-2">
+                    {initialUsers.map((user) => (
+                      <button
+                        key={user.id}
+                        onClick={() =>
+                          setNewGroupMembers((prev) =>
+                            prev.includes(user.id)
+                              ? prev.filter((id) => id !== user.id)
+                              : [...prev, user.id]
+                          )
+                        }
+                        className={`px-3 py-1.5 rounded-lg text-xs border transition-all ${
+                          newGroupMembers.includes(user.id)
+                            ? "bg-[#1a3a2a] text-white border-[#1a3a2a]"
+                            : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"
+                        }`}
+                      >
+                        {user.name || user.email}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleAddGroup}
+                    disabled={isPending || !newGroupName.trim()}
+                    className="px-4 py-2 bg-[#1a3a2a] text-white text-sm rounded-lg hover:bg-[#1a3a2a]/90 disabled:opacity-50"
+                  >
+                    {isPending ? "Creating..." : "Create Group"}
+                  </button>
+                  <button
+                    onClick={() => { setShowAddGroup(false); setGroupError(""); }}
+                    className="px-4 py-2 text-slate-600 text-sm hover:bg-slate-100 rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Groups list */}
+            <div className="space-y-3">
+              {initialGroups.length === 0 && !showAddGroup && (
+                <div className="bg-white rounded-xl border border-slate-200 px-4 py-8 text-center text-sm text-slate-400">
+                  No groups yet. Create your first group to organize team members.
+                </div>
+              )}
+              {initialGroups.map((group) => (
+                <div
+                  key={group.id}
+                  className="bg-white rounded-xl border border-slate-200 overflow-hidden"
+                >
+                  <div className="flex items-center gap-3 px-4 py-3">
+                    <div className={`w-4 h-4 rounded border-2 shrink-0 ${group.color}`} />
+                    <div className="flex-1 min-w-0">
+                      {editingGroup === group.id ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            autoFocus
+                            value={editGroupName}
+                            onChange={(e) => setEditGroupName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleRenameGroup(group.id);
+                              if (e.key === "Escape") setEditingGroup(null);
+                            }}
+                            className="border border-slate-300 rounded px-2 py-1 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+                          />
+                          <button onClick={() => handleRenameGroup(group.id)} className="p-1 text-green-600 hover:bg-green-50 rounded">
+                            <Check className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => setEditingGroup(null)} className="p-1 text-slate-400 hover:bg-slate-100 rounded">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{group.name}</p>
+                          {group.description && <p className="text-xs text-slate-400">{group.description}</p>}
+                          <p className="text-xs text-slate-400">{group.members.length} member{group.members.length !== 1 ? "s" : ""}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setExpandedGroup(expandedGroup === group.id ? null : group.id)}
+                        className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+                        title="Manage members"
+                      >
+                        <Users className="w-4 h-4" />
+                      </button>
+                      {editingGroup !== group.id && (
+                        <>
+                          <button
+                            onClick={() => { setEditingGroup(group.id); setEditGroupName(group.name); }}
+                            className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+                            title="Rename"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteGroup(group.id, group.name)}
+                            disabled={isPending}
+                            className="p-1.5 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 disabled:opacity-50"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Expanded members panel */}
+                  {expandedGroup === group.id && (
+                    <div className="border-t border-slate-100 px-4 py-3 bg-slate-50 space-y-2">
+                      <p className="text-xs font-medium text-slate-500">Members</p>
+                      {group.members.length === 0 && (
+                        <p className="text-xs text-slate-400">No members yet</p>
+                      )}
+                      {group.members.map((m) => (
+                        <div key={m.id} className="flex items-center gap-2 text-sm">
+                          {m.user.image ? (
+                            <img src={m.user.image} alt="" className="w-6 h-6 rounded-full" />
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-medium text-slate-500">
+                              {(m.user.name || m.user.email)[0].toUpperCase()}
+                            </div>
+                          )}
+                          <span className="flex-1 text-slate-700">{m.user.name || m.user.email}</span>
+                          <button
+                            onClick={() => handleRemoveMember(group.id, m.userId)}
+                            disabled={isPending}
+                            className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-500"
+                            title="Remove member"
+                          >
+                            <UserMinus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                      {/* Add member dropdown */}
+                      <div className="pt-1">
+                        <select
+                          value=""
+                          onChange={(e) => {
+                            if (e.target.value) handleAddMember(group.id, e.target.value);
+                          }}
+                          className="text-xs border border-slate-200 rounded-md px-2 py-1 text-slate-600 bg-white w-full"
+                        >
+                          <option value="">+ Add member...</option>
+                          {initialUsers
+                            .filter((u) => !group.members.some((m) => m.userId === u.id))
+                            .map((u) => (
+                              <option key={u.id} value={u.id}>
+                                {u.name || u.email}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
                     </div>
                   )}
                 </div>
