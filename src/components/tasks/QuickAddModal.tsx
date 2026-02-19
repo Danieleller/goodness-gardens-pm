@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Modal } from "@/components/ui/modal";
 import { createTask } from "@/actions/tasks";
-import { STATUSES, PRIORITIES } from "@/lib/utils";
+import { STATUSES } from "@/lib/utils";
 import { X } from "lucide-react";
 import type { User, Category, UserGroup, UserGroupMember } from "@/db/schema";
 
@@ -30,7 +30,6 @@ export function QuickAddModal({
   const [additionalAssignees, setAdditionalAssignees] = useState<string[]>([]);
   const [assignedGroups, setAssignedGroups] = useState<string[]>([]);
   const [category, setCategory] = useState<string>(categories[0]?.name || "Operations");
-  const [priority, setPriority] = useState<string>("medium");
   const [status, setStatus] = useState<string>("Backlog");
   const [dueDate, setDueDate] = useState("");
 
@@ -59,7 +58,6 @@ export function QuickAddModal({
         title: title.trim(),
         assignedToUserId: assignee || undefined,
         category: category as any,
-        priority: priority as any,
         status: status as any,
         dueDate: dueDate || undefined,
         additionalAssigneeIds: additionalAssignees.length > 0 ? additionalAssignees : undefined,
@@ -70,7 +68,6 @@ export function QuickAddModal({
       setAdditionalAssignees([]);
       setAssignedGroups([]);
       setCategory(categories[0]?.name || "Operations");
-      setPriority("medium");
       setStatus("Backlog");
       setDueDate("");
       onClose();
@@ -132,23 +129,6 @@ export function QuickAddModal({
 
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">
-              Priority
-            </label>
-            <select
-              value={priority}
-              onChange={(e) => setPriority(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
-            >
-              {PRIORITIES.map((p) => (
-                <option key={p} value={p}>
-                  {p.charAt(0).toUpperCase() + p.slice(1)}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
               Status
             </label>
             <select
@@ -184,7 +164,7 @@ export function QuickAddModal({
                       : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"
                   }`}
                 >
-                  {additionalAssignees.includes(u.id) && "â "}
+                  {additionalAssignees.includes(u.id) && "\u2713 "}
                   {u.name || u.email}
                 </button>
               ))}
@@ -209,7 +189,7 @@ export function QuickAddModal({
                       : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"
                   }`}
                 >
-                  {assignedGroups.includes(g.id) && "â "}
+                  {assignedGroups.includes(g.id) && "\u2713 "}
                   {g.name} ({g.members.length})
                 </button>
               ))}
@@ -219,7 +199,7 @@ export function QuickAddModal({
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            Due date
+            Deadline
           </label>
           <input
             type="date"
