@@ -3,7 +3,7 @@
 import { db } from "@/db";
 import { rocks, users } from "@/db/schema";
 import { auth } from "@/lib/auth";
-import { eq, and, asc, desc } from "drizzle-orm";
+import { eq, and, asc, desc, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function getRocks(quarter?: string) {
@@ -32,7 +32,7 @@ export async function getQuarters() {
 
 export async function createRock(data: {
   title: string;
-  ownerUserId: string;
+  ownerUserId?: string | null;
   quarter: string;
   rockNumber?: number;
 }) {
@@ -42,9 +42,12 @@ export async function createRock(data: {
   // Auto-assign rock number if not provided
   let rockNumber = data.rockNumber;
   if (!rockNumber) {
+    const ownerFilter = data.ownerUserId
+      ? eq(rocks.ownerUserId, data.ownerUserId)
+      : isNull(rocks.ownerUserId);
     const existingRocks = await db.query.rocks.findMany({
       where: and(
-        eq(rocks.ownerUserId, data.ownerUserId),
+        ownerFilter,
         eq(rocks.quarter, data.quarter)
       ),
     });
@@ -57,7 +60,7 @@ export async function createRock(data: {
   await db.insert(rocks).values({
     id,
     title: data.title,
-    ownerUserId: data.ownerUserId,
+    ownerUserId: data.ownerUserId ?? null,
     quarter: data.quarter,
     rockNumber,
     status: "not_started",

@@ -44,7 +44,7 @@ export function RocksView({
   const [newRockOwner, setNewRockOwner] = useState("");
   const [editingRock, setEditingRock] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
-  const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set(users.map((u) => u.id)));
+  const [expandedUsers, setExpandedUsers] = useState<Set<string>>(new Set([...users.map((u) => u.id), "__unassigned__"]));
 
   // Get unique quarters from rocks
   const allQuarters = [...new Set(rocks.map((r) => r.quarter))];
@@ -54,12 +54,20 @@ export function RocksView({
   // Filter rocks for selected quarter
   const quarterRocks = rocks.filter((r) => r.quarter === selectedQuarter);
 
-  // Group rocks by user
-  const rocksByUser = new Map<string, RockWithOwner[]>();
+  // Group rocks by user (including null for unassigned)
+  const rocksByUser = new Map<string | null, RockWithOwner[]>();
+  const unassignedRocks: RockWithOwner[] = [];
   for (const rock of quarterRocks) {
-    const existing = rocksByUser.get(rock.ownerUserId) || [];
-    existing.push(rock);
-    rocksByUser.set(rock.ownerUserId, existing);
+    if (rock.ownerUserId === null) {
+      unassignedRocks.push(rock);
+      const existing = rocksByUser.get(null) || [];
+      existing.push(rock);
+      rocksByUser.set(null, existing);
+    } else {
+      const existing = rocksByUser.get(rock.ownerUserId) || [];
+      existing.push(rock);
+      rocksByUser.set(rock.ownerUserId, existing);
+    }
   }
 
   // Get users who have rocks, plus all users for the dropdown
@@ -82,11 +90,11 @@ export function RocksView({
   };
 
   const handleAddRock = () => {
-    if (!newRockTitle.trim() || !newRockOwner) return;
+    if (!newRockTitle.trim() || newRockOwner === "") return;
     startTransition(async () => {
       await createRock({
         title: newRockTitle.trim(),
-        ownerUserId: newRockOwner,
+        ownerUserId: newRockOwner === "null" ? null : newRockOwner,
         quarter: selectedQuarter,
       });
       setNewRockTitle("");
@@ -212,6 +220,7 @@ export function RocksView({
                 className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
               >
                 <option value="">Select owner...</option>
+                <option value="null">Unassigned</option>
                 {users.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name || u.email}
@@ -221,7 +230,7 @@ export function RocksView({
             </div>
             <button
               onClick={handleAddRock}
-              disabled={isPending || !newRockTitle.trim() || !newRockOwner}
+              disabled={isPending || !newRockTitle.trim() || newRockOwner === ""}
               className="px-4 py-2 bg-black text-white text-sm font-medium rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors"
             >
               {isPending ? "Adding..." : "Add"}
@@ -238,6 +247,135 @@ export function RocksView({
 
       {/* Rocks by Person */}
       <div className="max-w-5xl mx-auto px-6 py-6 space-y-4">
+        {/* Unassigned rocks section */}
+        {unassignedRocks.length > 0 && (
+          <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            {/* Unassigned header */}
+            <button
+              onClick={() => toggleUser("__unassigned__")}
+              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors"
+            >
+              {expandedUsers.has("__unassigned__") ? (
+                <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+              ) : (
+                <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+              )}
+              <div className="w-8 h-8 rounded-full bg-slate-300 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                ?
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-semibold text-slate-900">Unassigned</p>
+                <p className="text-xs text-slate-400">
+                  {unassignedRocks.length} rock{unassignedRocks.length !== 1 ? "s" : ""} · {unassignedRocks.filter((r) => r.status === "complete").length} complete
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-24 bg-slate-100 rounded-full h-1.5">
+                  <div
+                    className="bg-black rounded-full h-1.5 transition-all"
+                    style={{
+                      width: `${unassignedRocks.length > 0 ? (unassignedRocks.filter((r) => r.status === "complete").length / unassignedRocks.length) * 100 : 0}%`,
+                    }}
+                  />
+                </div>
+                <span className="text-xs font-medium text-slate-500 w-8 text-right">
+                  {unassignedRocks.length > 0 ? Math.round((unassignedRocks.filter((r) => r.status === "complete").length / unassignedRocks.length) * 100) : 0}%
+                </span>
+              </div>
+            </button>
+
+            {/* Rocks list */}
+            {expandedUsers.has("__unassigned__") && (
+              <div className="border-t border-slate-100">
+                {unassignedRocks
+                  .sort((a, b) => a.rockNumber - b.rockNumber)
+                  .map((rock) => {
+                    const statusConf = STATUS_CONFIG[rock.status] || STATUS_CONFIG.not_started;
+                    const isEditing = editingRock === rock.id;
+
+                    return (
+                      <div
+                        key={rock.id}
+                        className="flex items-center gap-3 px-4 py-3 border-b border-slate-50 last:border-b-0 hover:bg-slate-50/50 group"
+                      >
+                        {/* Rock number */}
+                        <div className="w-7 h-7 rounded-md bg-black text-white flex items-center justify-center text-xs font-bold shrink-0">
+                          {rock.rockNumber}
+                        </div>
+
+                        {/* Title */}
+                        {isEditing ? (
+                          <div className="flex-1 flex items-center gap-2">
+                            <input
+                              autoFocus
+                              value={editTitle}
+                              onChange={(e) => setEditTitle(e.target.value)}
+                              className="flex-1 border border-slate-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-black/20"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") handleSaveEdit(rock.id);
+                                if (e.key === "Escape") setEditingRock(null);
+                              }}
+                            />
+                            <button
+                              onClick={() => handleSaveEdit(rock.id)}
+                              className="text-emerald-600 hover:text-emerald-800"
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => setEditingRock(null)}
+                              className="text-slate-400 hover:text-slate-600"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ) : (
+                          <p className={`flex-1 text-sm ${
+                            rock.status === "complete" ? "line-through text-slate-400" : "text-slate-800"
+                          }`}>
+                            {rock.title}
+                          </p>
+                        )}
+
+                        {/* Status dropdown */}
+                        <select
+                          value={rock.status}
+                          onChange={(e) => handleStatusChange(rock.id, e.target.value)}
+                          className={`text-xs font-medium rounded-full px-3 py-1 border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-black/20 ${statusConf.bg} ${statusConf.text}`}
+                        >
+                          {Object.entries(STATUS_CONFIG).map(([key, val]) => (
+                            <option key={key} value={key}>
+                              {val.label}
+                            </option>
+                          ))}
+                        </select>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => {
+                              setEditingRock(rock.id);
+                              setEditTitle(rock.title);
+                            }}
+                            className="p-1 text-slate-400 hover:text-slate-600 rounded"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteRock(rock.id)}
+                            className="p-1 text-slate-400 hover:text-red-600 rounded"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+          </div>
+        )}
+
         {usersWithRocks.map((user) => {
           const userRocks = rocksByUser.get(user.id) || [];
           const isExpanded = expandedUsers.has(user.id);

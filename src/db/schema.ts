@@ -175,7 +175,6 @@ export const rocks = sqliteTable("rocks", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   title: text("title").notNull(),
   ownerUserId: text("owner_user_id")
-    .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   quarter: text("quarter").notNull(), // e.g., "Q1-2026"
   rockNumber: integer("rock_number").notNull().default(1),
