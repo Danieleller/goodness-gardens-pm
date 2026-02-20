@@ -18,25 +18,35 @@ export const STATUSES = ["Backlog", "Doing", "Blocked", "Done"] as const;
 export const PRIORITIES = ["low", "medium", "high"] as const;
 
 export const PRIORITY_COLORS = {
-  low: "bg-slate-100 text-slate-700",
-  medium: "bg-amber-100 text-amber-700",
-  high: "bg-red-100 text-red-700",
+  low: "bg-stone-100 text-stone-600",
+  medium: "bg-amber-50 text-amber-700",
+  high: "bg-red-50 text-red-700",
 } as const;
 
 export const STATUS_COLORS = {
-  Backlog: "bg-slate-100 text-slate-600",
-  Doing: "bg-blue-100 text-blue-700",
-  Blocked: "bg-red-100 text-red-700",
-  Done: "bg-green-100 text-green-700",
+  Backlog: "bg-stone-100 text-stone-500",
+  Doing: "bg-emerald-50 text-emerald-700",
+  Blocked: "bg-amber-50 text-amber-700",
+  Done: "bg-stone-100 text-stone-400",
 } as const;
 
 export const CATEGORY_COLORS = {
-  Sales: "bg-purple-50 border-purple-200",
-  ProductDev: "bg-blue-50 border-blue-200",
+  Sales: "bg-rose-50 border-rose-200",
+  ProductDev: "bg-sky-50 border-sky-200",
   Operations: "bg-emerald-50 border-emerald-200",
   Finance: "bg-amber-50 border-amber-200",
-  Other: "bg-slate-50 border-slate-200",
+  Other: "bg-stone-50 border-stone-200",
 } as const;
+
+export function getStatusBorderClass(status: string): string {
+  const map: Record<string, string> = {
+    Backlog: "status-border-backlog",
+    Doing: "status-border-doing",
+    Blocked: "status-border-blocked",
+    Done: "status-border-done",
+  };
+  return map[status] || "status-border-backlog";
+}
 
 export function formatDate(date: string | null | undefined): string {
   if (!date) return "";
