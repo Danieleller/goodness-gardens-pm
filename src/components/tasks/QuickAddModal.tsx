@@ -78,7 +78,7 @@ export function QuickAddModal({
     <Modal open={open} onClose={onClose} title="Quick Add Task">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-sm font-medium text-stone-500 mb-1">
             Title <span className="text-red-500">*</span>
           </label>
           <input
@@ -87,19 +87,19 @@ export function QuickAddModal({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="What needs to be done?"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30 focus:border-[#1a3a2a]"
+            className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10 focus:border-[#1a3a2a]"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-stone-500 mb-1">
               Primary Assignee
             </label>
             <select
               value={assignee}
               onChange={(e) => setAssignee(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+              className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
             >
               <option value="">Unassigned</option>
               {users.map((u) => (
@@ -111,13 +111,13 @@ export function QuickAddModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-stone-500 mb-1">
               Category
             </label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+              className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
             >
               {categories.map((c) => (
                 <option key={c.name} value={c.name}>
@@ -128,13 +128,13 @@ export function QuickAddModal({
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-stone-500 mb-1">
               Status
             </label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+              className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
             >
               {STATUSES.map((s) => (
                 <option key={s} value={s}>
@@ -147,7 +147,7 @@ export function QuickAddModal({
 
         {/* Additional Assignees */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-sm font-medium text-stone-500 mb-1">
             Additional Assignees
           </label>
           <div className="flex flex-wrap gap-1.5">
@@ -161,10 +161,10 @@ export function QuickAddModal({
                   className={`px-2.5 py-1 rounded-full text-xs border transition-all ${
                     additionalAssignees.includes(u.id)
                       ? "bg-[#1a3a2a] text-white border-[#1a3a2a]"
-                      : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"
+                      : "bg-white text-stone-500 border-[#e8e0d4] hover:border-stone-400"
                   }`}
                 >
-                  {additionalAssignees.includes(u.id) && "\u2713 "}
+                  {additionalAssignees.includes(u.id) && "â "}
                   {u.name || u.email}
                 </button>
               ))}
@@ -174,7 +174,7 @@ export function QuickAddModal({
         {/* Assign to Groups */}
         {groups.length > 0 && (
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label className="block text-sm font-medium text-stone-500 mb-1">
               Assign to Groups
             </label>
             <div className="flex flex-wrap gap-1.5">
@@ -186,10 +186,10 @@ export function QuickAddModal({
                   className={`px-2.5 py-1 rounded-full text-xs border transition-all ${
                     assignedGroups.includes(g.id)
                       ? "bg-[#1a3a2a] text-white border-[#1a3a2a]"
-                      : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"
+                      : "bg-white text-stone-500 border-[#e8e0d4] hover:border-stone-400"
                   }`}
                 >
-                  {assignedGroups.includes(g.id) && "\u2713 "}
+                  {assignedGroups.includes(g.id) && "â "}
                   {g.name} ({g.members.length})
                 </button>
               ))}
@@ -198,14 +198,14 @@ export function QuickAddModal({
         )}
 
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+          <label className="block text-sm font-medium text-stone-500 mb-1">
             Deadline
           </label>
           <input
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+            className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
           />
         </div>
 
@@ -213,14 +213,14 @@ export function QuickAddModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+            className="px-4 py-2 text-sm font-medium text-stone-500 hover:bg-stone-100 rounded-lg transition-smooth"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={isPending || !title.trim()}
-            className="px-4 py-2 text-sm font-medium text-white bg-[#1a3a2a] hover:bg-[#1a3a2a]/90 rounded-lg transition-colors disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium text-white bg-[#1a3a2a] hover:bg-[#1a3a2a]/90 rounded-lg transition-smooth disabled:opacity-50"
           >
             {isPending ? "Creating..." : "Create Task"}
           </button>
