@@ -29,18 +29,35 @@ export function Header({
 
   return (
     <>
-      <header className="bg-[#faf8f5]/80 backdrop-blur-md border-b border-[#e8e0d4] sticky top-0 z-40">
+      <header
+        className="backdrop-blur-md sticky top-0 z-40"
+        style={{
+          background: "color-mix(in srgb, var(--surface-1) 80%, transparent)",
+          borderBottom: "1px solid var(--border)",
+        }}
+      >
         <div className="flex items-center gap-4 px-5 py-3">
           {/* Logo */}
           <div className="flex items-center gap-2.5 shrink-0">
-            <div className="w-8 h-8 bg-[#1a3a2a] rounded-lg flex items-center justify-center">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center"
+              style={{ background: "var(--accent)" }}
+            >
               <span className="text-white font-bold text-xs tracking-tight">GG</span>
             </div>
             <div className="hidden sm:block">
-              <p className="text-sm font-semibold text-[#2d2520] leading-none">
+              <p
+                className="text-sm font-semibold leading-none"
+                style={{ color: "var(--text)" }}
+              >
                 Goodness Gardens
               </p>
-              <p className="text-[11px] text-stone-400 mt-0.5">Task Manager</p>
+              <p
+                className="text-[11px] mt-0.5"
+                style={{ color: "var(--text-3)" }}
+              >
+                Task Manager
+              </p>
             </div>
           </div>
 
@@ -51,7 +68,10 @@ export function Header({
           <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={() => setShowAdd(true)}
-              className="flex items-center gap-1.5 bg-[#1a3a2a] hover:bg-[#2d5a42] text-white px-3.5 py-2 rounded-lg text-sm font-medium transition-smooth"
+              className="flex items-center gap-1.5 text-white px-3.5 py-2 rounded-lg text-sm font-medium transition-smooth"
+              style={{ background: "var(--accent)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
             >
               <Plus className="w-4 h-4" />
               <span className="hidden sm:inline">Add Task</span>
@@ -62,31 +82,46 @@ export function Header({
             {user.role === "admin" && (
               <Link
                 href="/settings"
-                className="p-2 rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-smooth"
+                className="p-2 rounded-lg transition-smooth"
+                style={{ color: "var(--text-3)" }}
                 title="Settings"
               >
                 <Settings className="w-4 h-4" />
               </Link>
             )}
 
-            <div className="flex items-center gap-2 ml-2 pl-3 border-l border-[#e8e0d4]">
+            <div
+              className="flex items-center gap-2 ml-2 pl-3"
+              style={{ borderLeft: "1px solid var(--border)" }}
+            >
               {user.image ? (
                 <img
                   src={user.image}
                   alt=""
-                  className="w-7 h-7 rounded-full ring-1 ring-stone-200"
+                  className="w-7 h-7 rounded-full"
+                  style={{ border: "1px solid var(--border)" }}
                 />
               ) : (
-                <div className="w-7 h-7 rounded-full bg-stone-200 flex items-center justify-center text-xs font-medium text-stone-500">
+                <div
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium"
+                  style={{
+                    background: "var(--surface-2)",
+                    color: "var(--text-3)",
+                  }}
+                >
                   {(user.name || user.email || "?")[0].toUpperCase()}
                 </div>
               )}
-              <span className="hidden md:block text-sm text-stone-600 max-w-[120px] truncate">
+              <span
+                className="hidden md:block text-sm max-w-[120px] truncate"
+                style={{ color: "var(--text-2)" }}
+              >
                 {user.name || user.email}
               </span>
               <button
                 onClick={() => signOut()}
-                className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-smooth"
+                className="p-1.5 rounded-lg transition-smooth"
+                style={{ color: "var(--text-3)" }}
                 title="Sign out"
               >
                 <LogOut className="w-4 h-4" />
