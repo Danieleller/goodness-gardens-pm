@@ -54,7 +54,7 @@ const ROLE_ICONS: Record<string, typeof Shield> = {
 };
 
 const COLOR_OPTIONS = [
-  { value: "bg-slate-50 border-slate-200", label: "Gray" },
+  { value: "bg-stone-50 border-[#e8e0d4]", label: "Gray" },
   { value: "bg-purple-50 border-purple-200", label: "Purple" },
   { value: "bg-blue-50 border-blue-200", label: "Blue" },
   { value: "bg-emerald-50 border-emerald-200", label: "Green" },
@@ -92,7 +92,7 @@ export function SettingsClient({
   const [showAddCat, setShowAddCat] = useState(false);
   const [newCatName, setNewCatName] = useState("");
   const [newCatDisplay, setNewCatDisplay] = useState("");
-  const [newCatColor, setNewCatColor] = useState("bg-slate-50 border-slate-200");
+  const [newCatColor, setNewCatColor] = useState("bg-stone-50 border-[#e8e0d4]");
   const [editingCat, setEditingCat] = useState<string | null>(null);
   const [editCatName, setEditCatName] = useState("");
   const [catError, setCatError] = useState("");
@@ -101,7 +101,7 @@ export function SettingsClient({
   const [showAddGroup, setShowAddGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupDesc, setNewGroupDesc] = useState("");
-  const [newGroupColor, setNewGroupColor] = useState("bg-slate-50 border-slate-200");
+  const [newGroupColor, setNewGroupColor] = useState("bg-stone-50 border-[#e8e0d4]");
   const [newGroupMembers, setNewGroupMembers] = useState<string[]>([]);
   const [editingGroup, setEditingGroup] = useState<string | null>(null);
   const [editGroupName, setEditGroupName] = useState("");
@@ -159,7 +159,7 @@ export function SettingsClient({
         await createCategory({ name, displayName, color: newCatColor });
         setNewCatName("");
         setNewCatDisplay("");
-        setNewCatColor("bg-slate-50 border-slate-200");
+        setNewCatColor("bg-stone-50 border-[#e8e0d4]");
         setShowAddCat(false);
         router.refresh();
       } catch (e: any) {
@@ -207,7 +207,7 @@ export function SettingsClient({
         });
         setNewGroupName("");
         setNewGroupDesc("");
-        setNewGroupColor("bg-slate-50 border-slate-200");
+        setNewGroupColor("bg-stone-50 border-[#e8e0d4]");
         setNewGroupMembers([]);
         setShowAddGroup(false);
         router.refresh();
@@ -265,31 +265,31 @@ export function SettingsClient({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#faf8f5]">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-4 py-3">
+      <div className="bg-[#faf8f5]/80 backdrop-blur-md border-b border-[#e8e0d4] px-4 py-3 sticky top-0 z-30">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
           <Link
             href="/"
-            className="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700"
+            className="flex items-center gap-2 text-sm text-stone-400 hover:text-stone-600"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to board
           </Link>
-          <h1 className="text-sm font-semibold text-slate-900">Settings</h1>
+          <h1 className="text-sm font-semibold text-[#2d2520]">Settings</h1>
           <div className="w-24" />
         </div>
       </div>
 
       <div className="max-w-3xl mx-auto p-4 md:p-6">
         {/* Tabs */}
-        <div className="flex bg-slate-100 rounded-lg p-0.5 mb-6 w-fit">
+        <div className="flex bg-stone-100/60 rounded-lg p-0.5 mb-6 w-fit">
           <button
             onClick={() => setTab("users")}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-smooth ${
               tab === "users"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+                ? "bg-white text-[#2d2520] shadow-sm"
+                : "text-stone-400 hover:text-stone-600"
             }`}
           >
             <Users className="w-4 h-4" />
@@ -297,10 +297,10 @@ export function SettingsClient({
           </button>
           <button
             onClick={() => setTab("categories")}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-smooth ${
               tab === "categories"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+                ? "bg-white text-[#2d2520] shadow-sm"
+                : "text-stone-400 hover:text-stone-600"
             }`}
           >
             <FolderOpen className="w-4 h-4" />
@@ -308,10 +308,10 @@ export function SettingsClient({
           </button>
           <button
             onClick={() => setTab("groups")}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-medium transition-smooth ${
               tab === "groups"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+                ? "bg-white text-[#2d2520] shadow-sm"
+                : "text-stone-400 hover:text-stone-600"
             }`}
           >
             <UsersRound className="w-4 h-4" />
@@ -323,12 +323,12 @@ export function SettingsClient({
         {tab === "users" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold text-[#2d2520]">
                 Team Members
               </h2>
               <button
                 onClick={() => setShowInvite(true)}
-                className="flex items-center gap-1.5 bg-[#1a3a2a] hover:bg-[#1a3a2a]/90 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                className="flex items-center gap-1.5 bg-[#1a3a2a] hover:bg-[#1a3a2a]/90 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-smooth"
               >
                 <Plus className="w-4 h-4" />
                 Invite User
@@ -343,16 +343,16 @@ export function SettingsClient({
 
             {/* Invite form */}
             {showInvite && (
-              <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-slate-700">
+              <div className="bg-white/60 rounded-xl border border-[#e8e0d4] p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-stone-600">
                   Invite New User
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-stone-400">
                   Pre-create a user account. They will be able to sign in with Google using this email.
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                    <label className="block text-xs font-medium text-stone-500 mb-1">
                       Name
                     </label>
                     <input
@@ -360,11 +360,11 @@ export function SettingsClient({
                       value={inviteName}
                       onChange={(e) => setInviteName(e.target.value)}
                       placeholder="Full name"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+                      className="w-full border border-[#e8e0d4] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                    <label className="block text-xs font-medium text-stone-500 mb-1">
                       Email
                     </label>
                     <input
@@ -372,18 +372,18 @@ export function SettingsClient({
                       value={inviteEmail}
                       onChange={(e) => setInviteEmail(e.target.value)}
                       placeholder="email@goodnessgardens.net"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+                      className="w-full border border-[#e8e0d4] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">
+                  <label className="block text-xs font-medium text-stone-500 mb-1">
                     Role
                   </label>
                   <select
                     value={inviteRole}
                     onChange={(e) => setInviteRole(e.target.value as any)}
-                    className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+                    className="border border-[#e8e0d4] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
                   >
                     <option value="member">Member</option>
                     <option value="manager">Manager</option>
@@ -400,7 +400,7 @@ export function SettingsClient({
                   </button>
                   <button
                     onClick={() => { setShowInvite(false); setUserError(""); }}
-                    className="px-4 py-2 text-slate-600 text-sm hover:bg-slate-100 rounded-lg"
+                    className="px-4 py-2 text-stone-500 text-sm hover:bg-stone-100 rounded-lg"
                   >
                     Cancel
                   </button>
@@ -409,7 +409,7 @@ export function SettingsClient({
             )}
 
             {/* Users list */}
-            <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
+            <div className="bg-white/60 rounded-xl border border-[#e8e0d4] divide-y divide-slate-100">
               {initialUsers.map((user) => {
                 const RoleIcon = ROLE_ICONS[user.role] || UserIcon;
                 const isCurrentUser = user.id === currentUser.id;
@@ -425,18 +425,18 @@ export function SettingsClient({
                         className="w-9 h-9 rounded-full"
                       />
                     ) : (
-                      <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-sm font-medium text-slate-500">
+                      <div className="w-9 h-9 rounded-full bg-stone-100 flex items-center justify-center text-sm font-medium text-stone-400">
                         {(user.name || user.email)[0].toUpperCase()}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-900 truncate">
+                      <p className="text-sm font-medium text-[#2d2520] truncate">
                         {user.name || "Unnamed"}
                         {isCurrentUser && (
-                          <span className="text-xs text-slate-400 ml-1">(you)</span>
+                          <span className="text-xs text-stone-400 ml-1">(you)</span>
                         )}
                       </p>
-                      <p className="text-xs text-slate-500 truncate">
+                      <p className="text-xs text-stone-400 truncate">
                         {user.email}
                       </p>
                     </div>
@@ -445,7 +445,7 @@ export function SettingsClient({
                         value={user.role}
                         onChange={(e) => handleUpdateRole(user.id, e.target.value as any)}
                         disabled={isCurrentUser || isPending}
-                        className="text-xs border border-slate-200 rounded-md px-2 py-1 text-slate-600 bg-white disabled:opacity-50"
+                        className="text-xs border border-[#e8e0d4] rounded-md px-2 py-1 text-stone-500 bg-white disabled:opacity-50"
                       >
                         <option value="member">Member</option>
                         <option value="manager">Manager</option>
@@ -455,7 +455,7 @@ export function SettingsClient({
                         <button
                           onClick={() => handleRemoveUser(user.id, user.name || user.email)}
                           disabled={isPending}
-                          className="p-1.5 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 disabled:opacity-50"
+                          className="p-1.5 rounded-md hover:bg-red-50 text-stone-400 hover:text-red-500 disabled:opacity-50"
                           title="Remove user"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -473,12 +473,12 @@ export function SettingsClient({
         {tab === "categories" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold text-[#2d2520]">
                 Task Categories
               </h2>
               <button
                 onClick={() => setShowAddCat(true)}
-                className="flex items-center gap-1.5 bg-[#1a3a2a] hover:bg-[#1a3a2a]/90 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                className="flex items-center gap-1.5 bg-[#1a3a2a] hover:bg-[#1a3a2a]/90 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-smooth"
               >
                 <Plus className="w-4 h-4" />
                 Add Category
@@ -493,13 +493,13 @@ export function SettingsClient({
 
             {/* Add category form */}
             {showAddCat && (
-              <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-slate-700">
+              <div className="bg-white/60 rounded-xl border border-[#e8e0d4] p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-stone-600">
                   New Category
                 </h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                    <label className="block text-xs font-medium text-stone-500 mb-1">
                       Internal Name (no spaces)
                     </label>
                     <input
@@ -507,11 +507,11 @@ export function SettingsClient({
                       value={newCatName}
                       onChange={(e) => setNewCatName(e.target.value.replace(/\s/g, ""))}
                       placeholder="e.g. Marketing"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+                      className="w-full border border-[#e8e0d4] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                    <label className="block text-xs font-medium text-stone-500 mb-1">
                       Display Name
                     </label>
                     <input
@@ -519,12 +519,12 @@ export function SettingsClient({
                       value={newCatDisplay}
                       onChange={(e) => setNewCatDisplay(e.target.value)}
                       placeholder="e.g. Marketing & Outreach"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+                      className="w-full border border-[#e8e0d4] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">
+                  <label className="block text-xs font-medium text-stone-500 mb-1">
                     Color
                   </label>
                   <div className="flex gap-2 flex-wrap">
@@ -553,7 +553,7 @@ export function SettingsClient({
                   </button>
                   <button
                     onClick={() => { setShowAddCat(false); setCatError(""); }}
-                    className="px-4 py-2 text-slate-600 text-sm hover:bg-slate-100 rounded-lg"
+                    className="px-4 py-2 text-stone-500 text-sm hover:bg-stone-100 rounded-lg"
                   >
                     Cancel
                   </button>
@@ -562,9 +562,9 @@ export function SettingsClient({
             )}
 
             {/* Categories list */}
-            <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
+            <div className="bg-white/60 rounded-xl border border-[#e8e0d4] divide-y divide-slate-100">
               {initialCategories.length === 0 && (
-                <div className="px-4 py-8 text-center text-sm text-slate-400">
+                <div className="px-4 py-8 text-center text-sm text-stone-400">
                   No categories yet. Add your first category above.
                 </div>
               )}
@@ -587,7 +587,7 @@ export function SettingsClient({
                             if (e.key === "Enter") handleRenameCategory(cat.id);
                             if (e.key === "Escape") setEditingCat(null);
                           }}
-                          className="border border-slate-300 rounded px-2 py-1 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+                          className="border border-[#e8e0d4] rounded px-2 py-1 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
                         />
                         <button
                           onClick={() => handleRenameCategory(cat.id)}
@@ -597,17 +597,17 @@ export function SettingsClient({
                         </button>
                         <button
                           onClick={() => setEditingCat(null)}
-                          className="p-1 text-slate-400 hover:bg-slate-100 rounded"
+                          className="p-1 text-stone-400 hover:bg-stone-100 rounded"
                         >
                           <X className="w-4 h-4" />
                         </button>
                       </div>
                     ) : (
                       <div>
-                        <p className="text-sm font-medium text-slate-900">
+                        <p className="text-sm font-medium text-[#2d2520]">
                           {cat.displayName}
                         </p>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-stone-400">
                           Key: {cat.name}
                         </p>
                       </div>
@@ -620,7 +620,7 @@ export function SettingsClient({
                           setEditingCat(cat.id);
                           setEditCatName(cat.displayName);
                         }}
-                        className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+                        className="p-1.5 rounded-md hover:bg-stone-100 text-stone-400 hover:text-stone-500"
                         title="Rename"
                       >
                         <Pencil className="w-4 h-4" />
@@ -628,7 +628,7 @@ export function SettingsClient({
                       <button
                         onClick={() => handleDeleteCategory(cat.id, cat.displayName)}
                         disabled={isPending}
-                        className="p-1.5 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 disabled:opacity-50"
+                        className="p-1.5 rounded-md hover:bg-red-50 text-stone-400 hover:text-red-500 disabled:opacity-50"
                         title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -644,12 +644,12 @@ export function SettingsClient({
         {tab === "groups" && (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">
+              <h2 className="text-lg font-semibold text-[#2d2520]">
                 User Groups
               </h2>
               <button
                 onClick={() => setShowAddGroup(true)}
-                className="flex items-center gap-1.5 bg-[#1a3a2a] hover:bg-[#1a3a2a]/90 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-colors"
+                className="flex items-center gap-1.5 bg-[#1a3a2a] hover:bg-[#1a3a2a]/90 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition-smooth"
               >
                 <Plus className="w-4 h-4" />
                 New Group
@@ -664,32 +664,32 @@ export function SettingsClient({
 
             {/* Add group form */}
             {showAddGroup && (
-              <div className="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
-                <h3 className="text-sm font-semibold text-slate-700">New Group</h3>
+              <div className="bg-white/60 rounded-xl border border-[#e8e0d4] p-4 space-y-3">
+                <h3 className="text-sm font-semibold text-stone-600">New Group</h3>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Name</label>
+                    <label className="block text-xs font-medium text-stone-500 mb-1">Name</label>
                     <input
                       type="text"
                       value={newGroupName}
                       onChange={(e) => setNewGroupName(e.target.value)}
                       placeholder="e.g. Farm Team"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+                      className="w-full border border-[#e8e0d4] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">Description</label>
+                    <label className="block text-xs font-medium text-stone-500 mb-1">Description</label>
                     <input
                       type="text"
                       value={newGroupDesc}
                       onChange={(e) => setNewGroupDesc(e.target.value)}
                       placeholder="Optional description"
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+                      className="w-full border border-[#e8e0d4] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Color</label>
+                  <label className="block text-xs font-medium text-stone-500 mb-1">Color</label>
                   <div className="flex gap-2 flex-wrap">
                     {COLOR_OPTIONS.map((opt) => (
                       <button
@@ -705,7 +705,7 @@ export function SettingsClient({
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">Members</label>
+                  <label className="block text-xs font-medium text-stone-500 mb-1">Members</label>
                   <div className="flex flex-wrap gap-2">
                     {initialUsers.map((user) => (
                       <button
@@ -720,7 +720,7 @@ export function SettingsClient({
                         className={`px-3 py-1.5 rounded-lg text-xs border transition-all ${
                           newGroupMembers.includes(user.id)
                             ? "bg-[#1a3a2a] text-white border-[#1a3a2a]"
-                            : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"
+                            : "bg-white text-stone-500 border-[#e8e0d4] hover:border-slate-400"
                         }`}
                       >
                         {user.name || user.email}
@@ -738,7 +738,7 @@ export function SettingsClient({
                   </button>
                   <button
                     onClick={() => { setShowAddGroup(false); setGroupError(""); }}
-                    className="px-4 py-2 text-slate-600 text-sm hover:bg-slate-100 rounded-lg"
+                    className="px-4 py-2 text-stone-500 text-sm hover:bg-stone-100 rounded-lg"
                   >
                     Cancel
                   </button>
@@ -749,14 +749,14 @@ export function SettingsClient({
             {/* Groups list */}
             <div className="space-y-3">
               {initialGroups.length === 0 && !showAddGroup && (
-                <div className="bg-white rounded-xl border border-slate-200 px-4 py-8 text-center text-sm text-slate-400">
+                <div className="bg-white/60 rounded-xl border border-[#e8e0d4] px-4 py-8 text-center text-sm text-stone-400">
                   No groups yet. Create your first group to organize team members.
                 </div>
               )}
               {initialGroups.map((group) => (
                 <div
                   key={group.id}
-                  className="bg-white rounded-xl border border-slate-200 overflow-hidden"
+                  className="bg-white/60 rounded-xl border border-[#e8e0d4] overflow-hidden"
                 >
                   <div className="flex items-center gap-3 px-4 py-3">
                     <div className={`w-4 h-4 rounded border-2 shrink-0 ${group.color}`} />
@@ -771,107 +771,54 @@ export function SettingsClient({
                               if (e.key === "Enter") handleRenameGroup(group.id);
                               if (e.key === "Escape") setEditingGroup(null);
                             }}
-                            className="border border-slate-300 rounded px-2 py-1 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/30"
+                            className="border border-[#e8e0d4] rounded px-2 py-1 text-sm flex-1 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
                           />
                           <button onClick={() => handleRenameGroup(group.id)} className="p-1 text-green-600 hover:bg-green-50 rounded">
                             <Check className="w-4 h-4" />
                           </button>
-                          <button onClick={() => setEditingGroup(null)} className="p-1 text-slate-400 hover:bg-slate-100 rounded">
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div>
-                          <p className="text-sm font-medium text-slate-900">{group.name}</p>
-                          {group.description && <p className="text-xs text-slate-400">{group.description}</p>}
-                          <p className="text-xs text-slate-400">{group.members.length} member{group.members.length !== 1 ? "s" : ""}</p>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <button
-                        onClick={() => setExpandedGroup(expandedGroup === group.id ? null : group.id)}
-                        className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600"
-                        title="Manage members"
-                      >
-                        <Users className="w-4 h-4" />
-                      </button>
-                      {editingGroup !== group.id && (
-                        <>
-                          <button
-                            onClick={() => { setEditingGroup(group.id); setEditGroupName(group.name); }}
-                            className="p-1.5 rounded-md hover:bg-slate-100 text-slate-400 hover:text-slate-600"
-                            title="Rename"
-                          >
-                            <Pencil className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteGroup(group.id, group.name)}
-                            disabled={isPending}
-                            className="p-1.5 rounded-md hover:bg-red-50 text-slate-400 hover:text-red-500 disabled:opacity-50"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
+                          <button onClick={() => setEditingGroup(null)} className="p-1 text-stone-400 hover:bg-stone-100 rounded">
+                            <XÛ\ÜÓ[YOHËMMÏØ]ÛÙ]
+H
+]Û\ÜÓ[YOH^\ÛHÛ[YY][H^VÈÌLHÙÜÝ\[Y_OÜÙÜÝ\\ØÜ\[Û	Û\ÜÓ[YOH^^È^\ÝÛKMÙÜÝ\\ØÜ\[ÛOÜBÛ\ÜÓ[YOH^^È^\ÝÛKMÙÜÝ\Y[X\Ë[ÝHY[X\ÙÜÝ\Y[X\Ë[ÝOOHHÈÈOÜÙ]
+_BÙ]]Û\ÜÓ[YOH^][\ËXÙ[\Ø\LH]ÛÛÛXÚÏ^Ê
+HOÙ]^[YÜÝ\
+^[YÜÝ\OOHÜÝ\YÈ[ÜÝ\Y
+_BÛ\ÜÓ[YOHLKHÝ[Y[YÝ\Ë\ÝÛKLL^\ÝÛKMÝ\^\ÝÛKML]OHX[YÙHY[X\È\Ù\ÈÛ\ÜÓ[YOHËMMÏØ]ÛÙY][ÑÜÝ\OOHÜÝ\Y	
+]ÛÛÛXÚÏ^Ê
+HOÈÙ]Y][ÑÜÝ\
+ÜÝ\Y
+NÈÙ]Y]ÜÝ\[YJÜÝ\[YJNÈ_BÛ\ÜÓ[YOHLKHÝ[Y[YÝ\Ë\ÝÛKLL^\ÝÛKMÝ\^\ÝÛKML]OH[[YH[Ú[Û\ÜÓ[YOHËMMÏØ]Û]ÛÛÛXÚÏ^Ê
+HO[Q[]QÜÝ\
+ÜÝ\YÜÝ\[YJ_B\ØXY^Ú\Ô[[ßBÛ\ÜÓ[YOHLKHÝ[Y[YÝ\Ë\YML^\ÝÛKMÝ\^\YML\ØXYÜXÚ]KML]OH[]H\ÚÛ\ÜÓ[YOHËMMÏØ]ÛÏ
+_BÙ]Ù]ËÊ^[YY[X\È[[
+ßBÙ^[YÜÝ\OOHÜÝ\Y	
+]Û\ÜÓ[YOHÜ\]Ü\VÈÙNL
+KÍMKLÈË\ÝÛKMLÜXÙK^KLÛ\ÜÓ[YOH^^ÈÛ[YY][H^\ÝÛKMY[X\ÏÜÙÜÝ\Y[X\Ë[ÝOOH	
+Û\ÜÓ[YOH^^È^\ÝÛKMÈY[X\ÈY]Ü
+_BÙÜÝ\Y[X\ËX\
 
-                  {/* Expanded members panel */}
-                  {expandedGroup === group.id && (
-                    <div className="border-t border-slate-100 px-4 py-3 bg-slate-50 space-y-2">
-                      <p className="text-xs font-medium text-slate-500">Members</p>
-                      {group.members.length === 0 && (
-                        <p className="text-xs text-slate-400">No members yet</p>
-                      )}
-                      {group.members.map((m) => (
-                        <div key={m.id} className="flex items-center gap-2 text-sm">
-                          {m.user.image ? (
-                            <img src={m.user.image} alt="" className="w-6 h-6 rounded-full" />
-                          ) : (
-                            <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-medium text-slate-500">
-                              {(m.user.name || m.user.email)[0].toUpperCase()}
-                            </div>
-                          )}
-                          <span className="flex-1 text-slate-700">{m.user.name || m.user.email}</span>
-                          <button
-                            onClick={() => handleRemoveMember(group.id, m.userId)}
-                            disabled={isPending}
-                            className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-500"
-                            title="Remove member"
-                          >
-                            <UserMinus className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                      {/* Add member dropdown */}
-                      <div className="pt-1">
-                        <select
-                          value=""
-                          onChange={(e) => {
-                            if (e.target.value) handleAddMember(group.id, e.target.value);
-                          }}
-                          className="text-xs border border-slate-200 rounded-md px-2 py-1 text-slate-600 bg-white w-full"
-                        >
-                          <option value="">+ Add member...</option>
-                          {initialUsers
-                            .filter((u) => !group.members.some((m) => m.userId === u.id))
-                            .map((u) => (
-                              <option key={u.id} value={u.id}>
-                                {u.name || u.email}
-                              </option>
-                            ))}
-                        </select>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+JHO
+]Ù^O^ÛKYHÛ\ÜÓ[YOH^][\ËXÙ[\Ø\L^\ÛHÛK\Ù\[XYÙHÈ
+[YÈÜÏ^ÛK\Ù\[XYÙ_H[HÛ\ÜÓ[YOHËMMÝ[YY[Ï
+H
+]Û\ÜÓ[YOHËMMÝ[YY[Ë\ÝÛKL^][\ËXÙ[\\ÝYKXÙ[\^VÌLHÛ[YY][H^\ÝÛKMÊK\Ù\[YHK\Ù\[XZ[
+VÌKÕ\\Ø\ÙJ
+_BÙ]
+_BÜ[Û\ÜÓ[YOH^LH^\ÝÛKMÛK\Ù\[YHK\Ù\[XZ[OÜÜ[]ÛÛÛXÚÏ^Ê
+HO[T[[ÝSY[X\ÜÝ\YK\Ù\Y
+_B\ØXY^Ú\Ô[[ßBÛ\ÜÓ[YOHLHÝ[YÝ\Ë\YML^\ÝÛKMÝ\^\YML]OH[[ÝHY[X\\Ù\Z[\ÈÛ\ÜÓ[YOHËLËHLËHÏØ]ÛÙ]
+J_BËÊYY[X\ÜÝÛ
+ßB]Û\ÜÓ[YOHLHÙ[XÝ[YOHÛÚ[ÙO^ÊJHOÂY
+K\Ù][YJH[PYY[X\ÜÝ\YK\Ù][YJNÂ_BÛ\ÜÓ[YOH^^ÈÜ\Ü\VÈÙNL
+HÝ[Y[YLKLH^\ÝÛKMLË]Ú]HËY[Ü[Û[YOHÈYY[X\ÛÜ[ÛÚ[]X[\Ù\Â[\
+JHOYÜÝ\Y[X\ËÛÛYJ
+JHOK\Ù\YOOHKY
+JBX\
+
+JHO
+Ü[ÛÙ^O^ÝKYH[YO^ÝKYOÝK[YHK[XZ[BÛÜ[Û
+J_BÜÙ[XÝÙ]Ù]
+_BÙ]
+J_BÙ]Ù]
+_BÙ]Ù]
+NÂB
