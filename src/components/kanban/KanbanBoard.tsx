@@ -19,7 +19,7 @@ import { TaskCard } from "./TaskCard";
 import { RocksView } from "../rocks/RocksView";
 import { CalendarView } from "../calendar/CalendarView";
 import { updateTask } from "@/actions/tasks";
-import { Users, LayoutGrid, Target, CalendarDays } from "lucide-react";
+import { Users, LayoutGrid, Target, CalendarDays, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
 import type { Task, User, Category, Rock } from "@/db/schema";
 
 type TaskWithRelations = Task & {
@@ -50,6 +50,15 @@ export function KanbanBoard({
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
 
+  // Company Snapshot metrics
+  const totalOpen = tasks.filter((t) => t.status !== "Done").length;
+  const overdueTasks = tasks.filter(
+    (t) => t.status !== "Done" && t.dueDate && new Date(t.dueDate) < new Date(new Date().toDateString())
+  ).length;
+  const blockedTasks = tasks.filter((t) => t.status === "Blocked").length;
+  const doneTasks = tasks.filter((t) => t.status === "Done").length;
+  const completionRate = tasks.length > 0 ? Math.round((doneTasks / tasks.length) * 100) : 0;
+
   // Apply filters
   const filteredTasks = tasks.filter((t) => {
     if (statusFilter && t.status !== statusFilter) return false;
@@ -69,35 +78,23 @@ export function KanbanBoard({
     }
   }, [view, users, categories]);
 
-  // Custom collision detection: try pointerWithin first (detects empty columns
-  // when the cursor is inside their bounds), then fall back to closestCorners
-  // for fine-grained positioning among task cards within a column.
   const customCollisionDetection: CollisionDetection = useCallback(
     (args) => {
-      // First check pointerWithin â this reliably detects column droppables
-      // even when they're empty, because it checks if pointer is inside rect
       const pointerCollisions = pointerWithin(args);
-
-      // If pointer is inside a column droppable, prefer that
       if (pointerCollisions.length > 0) {
-        // Check if any collision is a column (not a task card)
         const columnCollision = pointerCollisions.find((c) =>
           columnIds.has(c.id as string)
         );
         if (columnCollision) {
-          // Also include any task collisions for sorting within the column
           return pointerCollisions;
         }
         return pointerCollisions;
       }
-
-      // Fall back to closestCorners for edge cases
       return closestCorners(args);
     },
     [columnIds]
   );
 
-  // Find which column a task belongs to
   const findColumnForTask = useCallback(
     (taskId: string): string | null => {
       const task = tasks.find((t) => t.id === taskId);
@@ -125,13 +122,10 @@ export function KanbanBoard({
       const taskId = active.id as string;
       const overId = over.id as string;
 
-      // Resolve the target column: if overId is a column, use it directly;
-      // if overId is a task, find which column that task belongs to
       let targetColumnId: string;
       if (columnIds.has(overId)) {
         targetColumnId = overId;
       } else {
-        // overId is a task â find its column
         const col = findColumnForTask(overId);
         if (!col) return;
         targetColumnId = col;
@@ -181,7 +175,7 @@ export function KanbanBoard({
             id: "unassigned",
             title: "Unassigned",
             tasks: filteredTasks.filter((t) => !t.assignedToUserId),
-            color: "bg-slate-50 border-slate-200",
+            color: "bg-stone-50/50 border-[#e8e0d4]",
             isRocks: false,
           },
           ...users.map((user) => ({
@@ -190,7 +184,7 @@ export function KanbanBoard({
             tasks: filteredTasks.filter(
               (t) => t.assignedToUserId === user.id
             ),
-            color: "bg-slate-50 border-slate-200",
+            color: "bg-stone-50/50 border-[#e8e0d4]",
             isRocks: false,
           })),
         ]
@@ -204,16 +198,50 @@ export function KanbanBoard({
 
   return (
     <div className="flex flex-col h-full">
+      {/* Company Snapshot */}
+      {(view === "person" || view === "category") && (
+        <div className="grid grid-cols-4 gap-3 px-5 pt-4 pb-2">
+          <div className="snapshot-card">
+            <div className="flex items-center gap-2 mb-1">
+              <Clock className="w-3.5 h-3.5 text-stone-400" />
+              <span className="text-[11px] font-medium text-stone-400 uppercase tracking-wide">Open</span>
+            </div>
+            <p className="text-2xl font-semibold text-[#2d2520]">{totalOpen}</p>
+          </div>
+          <div className="snapshot-card">
+            <div className="flex items-center gap-2 mb-1">
+              <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
+              <span className="text-[11px] font-medium text-stone-400 uppercase tracking-wide">Overdue</span>
+            </div>
+            <p className={`text-2xl font-semibold ${overdueTasks > 0 ? "text-red-500" : "text-[#2d2520]"}`}>{overdueTasks}</p>
+          </div>
+          <div className="snapshot-card">
+            <div className="flex items-center gap-2 mb-1">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-[11px] font-medium text-stone-400 uppercase tracking-wide">Blocked</span>
+            </div>
+            <p className={`text-2xl font-semibold ${blockedTasks > 0 ? "text-amber-600" : "text-[#2d2520]"}`}>{blockedTasks}</p>
+          </div>
+          <div className="snapshot-card">
+            <div className="flex items-center gap-2 mb-1">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="text-[11px] font-medium text-stone-400 uppercase tracking-wide">Complete</span>
+            </div>
+            <p className="text-2xl font-semibold text-[#2d2520]">{completionRate}%</p>
+          </div>
+        </div>
+      )}
+
       {/* Toolbar */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-white flex-wrap">
+      <div className="flex items-center gap-3 px-5 py-3 border-b border-[#e8e0d4] flex-wrap">
         {/* View toggle */}
-        <div className="flex bg-slate-100 rounded-lg p-0.5">
+        <div className="flex bg-stone-100/60 rounded-lg p-0.5">
           <button
             onClick={() => setView("person")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-smooth ${
               view === "person"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+                ? "bg-white text-[#2d2520] shadow-sm"
+                : "text-stone-400 hover:text-stone-600"
             }`}
           >
             <Users className="w-4 h-4" />
@@ -221,10 +249,10 @@ export function KanbanBoard({
           </button>
           <button
             onClick={() => setView("category")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-smooth ${
               view === "category"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+                ? "bg-white text-[#2d2520] shadow-sm"
+                : "text-stone-400 hover:text-stone-600"
             }`}
           >
             <LayoutGrid className="w-4 h-4" />
@@ -232,10 +260,10 @@ export function KanbanBoard({
           </button>
           <button
             onClick={() => setView("rocks")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-smooth ${
               view === "rocks"
-                ? "bg-black text-white shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+                ? "bg-[#1a3a2a] text-white shadow-sm"
+                : "text-stone-400 hover:text-stone-600"
             }`}
           >
             <Target className="w-4 h-4" />
@@ -243,10 +271,10 @@ export function KanbanBoard({
           </button>
           <button
             onClick={() => setView("calendar")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-smooth ${
               view === "calendar"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+                ? "bg-white text-[#2d2520] shadow-sm"
+                : "text-stone-400 hover:text-stone-600"
             }`}
           >
             <CalendarDays className="w-4 h-4" />
@@ -255,21 +283,17 @@ export function KanbanBoard({
         </div>
 
         {(view === "person" || view === "category") && (
-          <>
-            {/* Filters */}
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-sm border border-slate-200 rounded-md px-2 py-1.5 text-slate-600 bg-white"
-            >
-              <option value="">All statuses</option>
-              <option value="Backlog">Backlog</option>
-              <option value="Doing">Doing</option>
-              <option value="Blocked">Blocked</option>
-              <option value="Done">Done</option>
-            </select>
-
-          </>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="text-sm border border-[#e8e0d4] rounded-lg px-2.5 py-1.5 text-stone-500 bg-white/60 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10 transition-smooth"
+          >
+            <option value="">All statuses</option>
+            <option value="Backlog">Backlog</option>
+            <option value="Doing">Doing</option>
+            <option value="Blocked">Blocked</option>
+            <option value="Done">Done</option>
+          </select>
         )}
       </div>
 
@@ -312,4 +336,3 @@ export function KanbanBoard({
     </div>
   );
 }
-
