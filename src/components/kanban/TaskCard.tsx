@@ -5,8 +5,10 @@ import { CSS } from "@dnd-kit/utilities";
 import { Badge } from "@/components/ui/badge";
 import {
   STATUS_COLORS,
+  PRIORITY_COLORS,
   formatDate,
   isOverdue,
+  getStatusBorderClass,
 } from "@/lib/utils";
 import { Calendar, GripVertical } from "lucide-react";
 import Link from "next/link";
@@ -41,59 +43,59 @@ export function TaskCard({
   };
 
   const overdue = isOverdue(task.dueDate) && task.status !== "Done";
-
-  // Detect if this task originated from Ultimate Rocks (R-prefixed ID)
   const isRockTask = task.id.startsWith("R-");
-
-  // Determine card style:
-  // - In the Rocks column: dark glass (glass-dark)
-  // - Rock task in a non-Rocks column: black glass (glass-dark) for visual distinction
-  // - Normal task in normal column: light glass (glass)
   const isDarkCard = isRocksColumn || (isRockTask && !isRocksColumn);
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className={`group rounded-xl p-3 transition-all ${
+      className={`group rounded-xl transition-smooth ${
         isDragging ? "opacity-50 scale-[1.02]" : ""
       } ${isDarkCard ? "glass-dark" : "glass"} ${
-        ""
+        !isDarkCard ? getStatusBorderClass(task.status) : ""
       }`}
     >
-      <div className="flex items-start gap-2">
+      <div className="flex items-start gap-2 p-3">
         <button
           {...attributes}
           {...listeners}
-          className={`mt-0.5 cursor-grab active:cursor-grabbing shrink-0 ${
+          className={`mt-0.5 cursor-grab active:cursor-grabbing shrink-0 opacity-0 group-hover:opacity-100 transition-smooth ${
             isDarkCard
-              ? "text-gray-500 hover:text-gray-300"
-              : "text-slate-300 hover:text-slate-500"
+              ? "text-white/30 hover:text-white/60"
+              : "text-stone-300 hover:text-stone-500"
           }`}
         >
-          <GripVertical className="w-4 h-4" />
+          <GripVertical className="w-3.5 h-3.5" />
         </button>
         <div className="flex-1 min-w-0">
           <Link
             href={`/tasks/${task.id}`}
-            className={`text-sm font-medium line-clamp-2 block ${
+            className={`text-sm font-medium line-clamp-2 block transition-smooth ${
               isDarkCard
-                ? "text-white hover:text-gray-300"
-                : "text-slate-900 hover:text-[#1a3a2a]"
+                ? "text-white/90 hover:text-white"
+                : "text-[#2d2520] hover:text-[#1a3a2a]"
             }`}
           >
             {task.title}
           </Link>
+
+          {/* Metadata row: category Â· deadline Â· assignee */}
           <div className="flex flex-wrap items-center gap-1.5 mt-2">
             <Badge className={STATUS_COLORS[task.status]}>{task.status}</Badge>
+            {task.category && (
+              <span className={`text-[11px] ${isDarkCard ? "text-white/40" : "text-stone-400"}`}>
+                {task.category}
+              </span>
+            )}
             {task.dueDate && (
               <span
-                className={`inline-flex items-center gap-1 text-xs ${
+                className={`inline-flex items-center gap-1 text-[11px] ${
                   overdue
-                    ? "text-red-600 font-medium"
+                    ? "text-red-500 font-medium"
                     : isDarkCard
-                      ? "text-gray-400"
-                      : "text-slate-500"
+                      ? "text-white/40"
+                      : "text-stone-400"
                 }`}
               >
                 <Calendar className="w-3 h-3" />
@@ -101,21 +103,32 @@ export function TaskCard({
               </span>
             )}
           </div>
+
+          {/* Assignee row */}
           {task.assignedTo && (
-            <div className="flex items-center gap-1 mt-1.5">
-              <p
-                className={`text-xs truncate ${
-                  isDarkCard ? "text-gray-500" : "text-slate-400"
+            <div className="flex items-center gap-1.5 mt-2">
+              <div
+                className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium shrink-0 ${
+                  isDarkCard
+                    ? "bg-white/10 text-white/60"
+                    : "bg-stone-100 text-stone-500"
                 }`}
               >
-                \u2192 {task.assignedTo.name || task.assignedTo.email}
+                {(task.assignedTo.name || task.assignedTo.email || "?")[0].toUpperCase()}
+              </div>
+              <p
+                className={`text-[11px] truncate ${
+                  isDarkCard ? "text-white/40" : "text-stone-400"
+                }`}
+              >
+                {task.assignedTo.name || task.assignedTo.email}
               </p>
               {(task.additionalAssignees?.length ?? 0) > 0 && (
                 <span
                   className={`inline-flex items-center justify-center text-[10px] font-medium rounded-full px-1.5 py-0.5 ${
                     isDarkCard
-                      ? "bg-gray-700 text-gray-300"
-                      : "bg-slate-100 text-slate-500"
+                      ? "bg-white/10 text-white/50"
+                      : "bg-stone-100 text-stone-400"
                   }`}
                 >
                   +{task.additionalAssignees!.length}
