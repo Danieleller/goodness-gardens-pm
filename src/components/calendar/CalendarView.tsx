@@ -81,14 +81,16 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
   return (
     <div className="flex flex-col h-full">
       {/* Calendar header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-[#e8e0d4]">
+      <div className="flex items-center justify-between px-5 py-3"
+        style={{ borderBottom: "1px solid var(--border)" }}>
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-[#2d2520]">
+          <h2 className="text-lg font-semibold [color:var(--text)]">
             {MONTH_NAMES[currentMonth]} {currentYear}
           </h2>
           <button
             onClick={goToToday}
-            className="px-2.5 py-1 text-xs font-medium border border-[#e8e0d4] rounded-lg text-stone-500 hover:bg-stone-50 transition-smooth"
+            className="px-2.5 py-1 text-xs font-medium rounded-lg [color:var(--text-2)] transition-smooth"
+            style={{ border: "1px solid var(--border)" }}
           >
             Today
           </button>
@@ -96,13 +98,13 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
         <div className="flex items-center gap-1">
           <button
             onClick={goToPrevMonth}
-            className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400 transition-smooth"
+            className="p-1.5 rounded-lg hover:bg-[var(--surface-2)] [color:var(--text-3)] transition-smooth"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={goToNextMonth}
-            className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400 transition-smooth"
+            className="p-1.5 rounded-lg hover:bg-[var(--surface-2)] [color:var(--text-3)] transition-smooth"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -110,11 +112,15 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
       </div>
 
       {/* Day names header */}
-      <div className="grid grid-cols-7 border-b border-[#e8e0d4] bg-stone-50/50">
+      <div className="grid grid-cols-7"
+        style={{
+          borderBottom: "1px solid var(--border)",
+          background: "var(--surface-1)",
+        }}>
         {DAY_NAMES.map((day) => (
           <div
             key={day}
-            className="px-2 py-2 text-[11px] font-medium text-stone-400 text-center uppercase tracking-wide"
+            className="px-2 py-2 text-[11px] font-medium [color:var(--text-3)] text-center uppercase tracking-wide"
           >
             {day}
           </div>
@@ -128,7 +134,8 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
             return (
               <div
                 key={`empty-${idx}`}
-                className="border-b border-r border-[#e8e0d4]/40 bg-stone-50/30"
+                className="border-b border-r border-[var(--border)]"
+                style={{ background: "var(--surface-1)", opacity: 0.5 }}
               />
             );
           }
@@ -141,24 +148,37 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
           return (
             <div
               key={dateStr}
-              className={`border-b border-r border-[#e8e0d4]/40 p-1 overflow-hidden ${
-                isToday ? "bg-emerald-50/30" : ""
-              }`}
+              className="border-b border-r border-[var(--border)] p-1 overflow-hidden"
+              style={
+                isToday
+                  ? {
+                      background:
+                        "color-mix(in srgb, var(--accent) 8%, transparent)",
+                    }
+                  : undefined
+              }
             >
               <div className="flex items-center justify-between mb-0.5">
                 <span
                   className={`inline-flex items-center justify-center w-6 h-6 text-xs rounded-full ${
                     isToday
-                      ? "bg-[#1a3a2a] text-white font-bold"
-                      : isPast
-                        ? "text-stone-300"
-                        : "text-stone-500"
+                      ? "bg-[var(--accent)] text-white font-bold"
+                      : ""
                   }`}
+                  style={
+                    !isToday
+                      ? {
+                          color: isPast
+                            ? "var(--text-3)"
+                            : "var(--text-2)",
+                        }
+                      : undefined
+                  }
                 >
                   {day}
                 </span>
                 {dayTasks.length > 0 && (
-                  <span className="text-[10px] text-stone-300">
+                  <span className="text-[10px] [color:var(--text-3)]">
                     {dayTasks.length}
                   </span>
                 )}
@@ -170,12 +190,12 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
                     href={`/tasks/${task.id}`}
                     className={`block px-1.5 py-0.5 rounded text-[11px] leading-tight truncate transition-smooth ${
                       task.status === "Done"
-                        ? "bg-stone-100 text-stone-400 line-through"
+                        ? "bg-[var(--surface-2)] [color:var(--text-3)] line-through"
                         : task.status === "Blocked"
-                          ? "bg-amber-50 text-amber-700"
+                          ? "bg-[color-mix(in_srgb,var(--status-blocked)_10%,transparent)] [color:var(--status-blocked)]"
                           : isPast
-                            ? "bg-red-50 text-red-500 font-medium"
-                            : "bg-stone-50 text-stone-600 hover:bg-stone-100"
+                            ? "bg-[color-mix(in_srgb,var(--status-overdue)_10%,transparent)] [color:var(--status-overdue)] font-medium"
+                            : "bg-[var(--surface-1)] [color:var(--text-2)] hover:bg-[var(--surface-2)]"
                     }`}
                   >
                     {task.title}
