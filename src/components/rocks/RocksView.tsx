@@ -17,11 +17,11 @@ import type { User, Rock } from "@/db/schema";
 type RockWithOwner = Rock & { owner: User };
 
 const STATUS_CONFIG = {
-  not_started: { label: "Not Started", bg: "bg-stone-100", text: "text-stone-500", dot: "bg-stone-400" },
+  not_started: { label: "Not Started", bg: "bg-[var(--surface-2)]", text: "[color:var(--text-2)]", dot: "bg-[var(--text-3)]" },
   on_track: { label: "On Track", bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-500" },
   at_risk: { label: "At Risk", bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-500" },
   off_track: { label: "Off Track", bg: "bg-red-50", text: "text-red-600", dot: "bg-red-500" },
-  complete: { label: "Complete", bg: "bg-[#1a3a2a]", text: "text-white", dot: "bg-white" },
+  complete: { label: "Complete", bg: "bg-[var(--accent)]", text: "text-white", dot: "bg-white" },
 };
 
 function getCurrentQuarter(): string {
@@ -133,10 +133,10 @@ export function RocksView({
     return (
       <div
         key={rock.id}
-        className="flex items-center gap-3 px-4 py-3 border-b border-[#e8e0d4]/40 last:border-b-0 hover:bg-stone-50/50 group transition-smooth"
+        className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border)] last:border-b-0 hover:bg-[var(--surface-1)] group transition-smooth"
       >
         {/* Rock number */}
-        <div className="w-7 h-7 rounded-lg bg-[#1a3a2a] text-white flex items-center justify-center text-xs font-bold shrink-0">
+        <div className="w-7 h-7 rounded-lg bg-[var(--accent)] text-white flex items-center justify-center text-xs font-bold shrink-0">
           {rock.rockNumber}
         </div>
 
@@ -147,7 +147,7 @@ export function RocksView({
               autoFocus
               value={editTitle}
               onChange={(e) => setEditTitle(e.target.value)}
-              className="flex-1 border border-[#e8e0d4] rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
+              className="flex-1 border border-[var(--border)] rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10"
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleSaveEdit(rock.id);
                 if (e.key === "Escape") setEditingRock(null);
@@ -161,14 +161,14 @@ export function RocksView({
             </button>
             <button
               onClick={() => setEditingRock(null)}
-              className="text-stone-400 hover:text-stone-600 transition-smooth"
+              className="[color:var(--text-3)] hover:[color:var(--text-2)] transition-smooth"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         ) : (
           <p className={`flex-1 text-sm ${
-            rock.status === "complete" ? "line-through text-stone-400" : "text-[#2d2520]"
+            rock.status === "complete" ? "line-through [color:var(--text-3)]" : "[color:var(--text)]"
           }`}>
             {rock.title}
           </p>
@@ -178,7 +178,7 @@ export function RocksView({
         <select
           value={rock.status}
           onChange={(e) => handleStatusChange(rock.id, e.target.value)}
-          className={`text-[11px] font-medium rounded-md px-2.5 py-1 border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10 ${statusConf.bg} ${statusConf.text}`}
+          className={`text-[11px] font-medium rounded-md px-2.5 py-1 border-0 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10 ${statusConf.bg} ${statusConf.text}`}
         >
           {Object.entries(STATUS_CONFIG).map(([key, val]) => (
             <option key={key} value={key}>
@@ -194,13 +194,13 @@ export function RocksView({
               setEditingRock(rock.id);
               setEditTitle(rock.title);
             }}
-            className="p-1 text-stone-400 hover:text-stone-600 rounded transition-smooth"
+            className="p-1 [color:var(--text-3)] hover:[color:var(--text-2)] rounded transition-smooth"
           >
             <Pencil className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => handleDeleteRock(rock.id)}
-            className="p-1 text-stone-400 hover:text-red-500 rounded transition-smooth"
+            className="p-1 [color:var(--text-3)] hover:text-red-500 rounded transition-smooth"
           >
             <Trash2 className="w-3.5 h-3.5" />
           </button>
@@ -216,40 +216,40 @@ export function RocksView({
     userRocks: RockWithOwner[],
     userCompleted: number
   ) => (
-    <div key={key} className="bg-white/60 rounded-xl border border-[#e8e0d4] overflow-hidden hover-lift">
+    <div key={key} className="bg-[var(--surface-1)] rounded-xl border border-[var(--border)] overflow-hidden hover-lift">
       <button
         onClick={() => toggleUser(key)}
-        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-stone-50/50 transition-smooth"
+        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[var(--surface-1)] transition-smooth"
       >
         {expandedUsers.has(key) ? (
-          <ChevronDown className="w-4 h-4 text-stone-300 shrink-0" />
+          <ChevronDown className="w-4 h-4 [color:var(--text-3)] shrink-0" />
         ) : (
-          <ChevronRight className="w-4 h-4 text-stone-300 shrink-0" />
+          <ChevronRight className="w-4 h-4 [color:var(--text-3)] shrink-0" />
         )}
         {avatar}
         <div className="flex-1 text-left">
-          <p className="text-sm font-semibold text-[#2d2520]">{label}</p>
-          <p className="text-[11px] text-stone-400">
+          <p className="text-sm font-semibold [color:var(--text)]">{label}</p>
+          <p className="text-[11px] [color:var(--text-3)]">
             {userRocks.length} rock{userRocks.length !== 1 ? "s" : ""} Â· {userCompleted} complete
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-24 bg-stone-100 rounded-full h-1.5">
+          <div className="w-24 bg-[var(--surface-2)] rounded-full h-1.5">
             <div
-              className="bg-[#1a3a2a] rounded-full h-1.5 transition-all"
+              className="bg-[var(--accent)] rounded-full h-1.5 transition-all"
               style={{
                 width: `${userRocks.length > 0 ? (userCompleted / userRocks.length) * 100 : 0}%`,
               }}
             />
           </div>
-          <span className="text-xs font-semibold text-stone-500 w-8 text-right">
+          <span className="text-xs font-semibold [color:var(--text-2)] w-8 text-right">
             {userRocks.length > 0 ? Math.round((userCompleted / userRocks.length) * 100) : 0}%
           </span>
         </div>
       </button>
 
       {expandedUsers.has(key) && (
-        <div className="border-t border-[#e8e0d4]/60">
+        <div className="border-t border-[var(--border)]">
           {userRocks
             .sort((a, b) => a.rockNumber - b.rockNumber)
             .map(renderRockRow)}
@@ -282,7 +282,7 @@ export function RocksView({
               </select>
               <button
                 onClick={() => setShowAddForm(!showAddForm)}
-                className="flex items-center gap-1.5 bg-white text-[#1a3a2a] px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-white/90 transition-smooth"
+                className="flex items-center gap-1.5 bg-white [color:var(--accent)] px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-white/90 transition-smooth"
               >
                 <Plus className="w-4 h-4" />
                 Add Rock
@@ -330,25 +330,25 @@ export function RocksView({
 
       {/* Add Rock Form */}
       {showAddForm && (
-        <div className="bg-stone-50/50 border-b border-[#e8e0d4] px-6 py-4">
+        <div className="bg-[var(--surface-1)] border-b border-[var(--border)] px-6 py-4">
           <div className="max-w-5xl mx-auto flex items-end gap-3">
             <div className="flex-1">
-              <label className="block text-[11px] font-medium text-stone-400 uppercase tracking-wide mb-1">Rock Title</label>
+              <label className="block text-[11px] font-medium [color:var(--text-3)] uppercase tracking-wide mb-1">Rock Title</label>
               <input
                 autoFocus
                 value={newRockTitle}
                 onChange={(e) => setNewRockTitle(e.target.value)}
                 placeholder="What's the company goal?"
-                className="w-full border border-[#e8e0d4] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10 bg-white/60"
+                className="w-full border border-[var(--border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10 bg-[var(--surface-1)]"
                 onKeyDown={(e) => e.key === "Enter" && handleAddRock()}
               />
             </div>
             <div className="w-48">
-              <label className="block text-[11px] font-medium text-stone-400 uppercase tracking-wide mb-1">Owner</label>
+              <label className="block text-[11px] font-medium [color:var(--text-3)] uppercase tracking-wide mb-1">Owner</label>
               <select
                 value={newRockOwner}
                 onChange={(e) => setNewRockOwner(e.target.value)}
-                className="w-full border border-[#e8e0d4] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10 bg-white/60"
+                className="w-full border border-[var(--border)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10 bg-[var(--surface-1)]"
               >
                 <option value="">Select owner...</option>
                 <option value="null">Unassigned</option>
@@ -362,13 +362,13 @@ export function RocksView({
             <button
               onClick={handleAddRock}
               disabled={isPending || !newRockTitle.trim() || newRockOwner === ""}
-              className="px-4 py-2 bg-[#1a3a2a] text-white text-sm font-medium rounded-lg hover:bg-[#2d5a42] disabled:opacity-50 transition-smooth"
+              className="px-4 py-2 bg-[var(--accent)] text-white text-sm font-medium rounded-lg hover:bg-[var(--accent)]/90 disabled:opacity-50 transition-smooth"
             >
               {isPending ? "Adding..." : "Add"}
             </button>
             <button
               onClick={() => setShowAddForm(false)}
-              className="px-4 py-2 text-stone-500 text-sm hover:bg-stone-100 rounded-lg transition-smooth"
+              className="px-4 py-2 [color:var(--text-2)] text-sm hover:bg-[var(--surface-2)] rounded-lg transition-smooth"
             >
               Cancel
             </button>
@@ -383,7 +383,7 @@ export function RocksView({
           renderUserSection(
             "__unassigned__",
             "Unassigned",
-            <div className="w-8 h-8 rounded-full bg-stone-200 text-stone-500 flex items-center justify-center text-xs font-bold shrink-0">
+            <div className="w-8 h-8 rounded-full bg-[var(--surface-2)] [color:var(--text-2)] flex items-center justify-center text-xs font-bold shrink-0">
               ?
             </div>,
             unassignedRocks,
@@ -398,9 +398,9 @@ export function RocksView({
             user.id,
             user.name || user.email,
             user.image ? (
-              <img src={user.image} alt="" className="w-8 h-8 rounded-full shrink-0 ring-1 ring-stone-200" />
+              <img src={user.image} alt="" className="w-8 h-8 rounded-full shrink-0 ring-1 ring-[var(--border)]" />
             ) : (
-              <div className="w-8 h-8 rounded-full bg-[#1a3a2a] text-white flex items-center justify-center text-xs font-bold shrink-0">
+              <div className="w-8 h-8 rounded-full bg-[var(--accent)] text-white flex items-center justify-center text-xs font-bold shrink-0">
                 {(user.name || user.email || "?")[0].toUpperCase()}
               </div>
             ),
@@ -411,11 +411,11 @@ export function RocksView({
 
         {/* Users without rocks */}
         {usersWithoutRocks.length > 0 && usersWithRocks.length > 0 && (
-          <div className="border-t border-[#e8e0d4] pt-4">
-            <p className="text-[11px] text-stone-400 mb-2 font-medium uppercase tracking-wide">No Rocks Assigned</p>
+          <div className="border-t border-[var(--border)] pt-4">
+            <p className="text-[11px] [color:var(--text-3)] mb-2 font-medium uppercase tracking-wide">No Rocks Assigned</p>
             <div className="flex flex-wrap gap-2">
               {usersWithoutRocks.map((u) => (
-                <span key={u.id} className="text-[11px] text-stone-500 bg-stone-100 rounded-md px-2.5 py-1">
+                <span key={u.id} className="text-[11px] [color:var(--text-2)] bg-[var(--surface-2)] rounded-md px-2.5 py-1">
                   {u.name || u.email}
                 </span>
               ))}
@@ -425,9 +425,9 @@ export function RocksView({
 
         {totalRocks === 0 && (
           <div className="text-center py-16">
-            <Target className="w-12 h-12 text-stone-200 mx-auto mb-3" />
-            <h3 className="text-lg font-semibold text-stone-500">No Rocks for {selectedQuarter.replace("-", " ")}</h3>
-            <p className="text-sm text-stone-400 mt-1">
+            <Target className="w-12 h-12 [color:var(--text-3)] mx-auto mb-3" />
+            <h3 className="text-lg font-semibold [color:var(--text-2)]">No Rocks for {selectedQuarter.replace("-", " ")}</h3>
+            <p className="text-sm [color:var(--text-3)] mt-1">
               Rocks are your company&apos;s ultimate goals. Click &quot;Add Rock&quot; to get started.
             </p>
           </div>
