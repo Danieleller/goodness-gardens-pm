@@ -253,3 +253,51 @@ select option {
 .gap-sp-6 { gap: 24px; }
 .gap-sp-8 { gap: 32px; }
 .gap-sp-12 { gap: 48px; }
+
+
+/* ═══ Overlay Animations ═══ */
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-in {
+  animation: overlay-in 180ms ease-out;
+}
+
+/* Drawer slide-in (right side) */
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.drawer-enter {
+  animation: drawer-in 220ms ease-out;
+}
+
+/* ═══ Heidi Highlight ═══ */
+@keyframes heidi-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--accent-soft);
+  }
+  50% {
+    box-shadow: 0 0 0 6px var(--accent-soft);
+  }
+}
+
+.heidi-highlight {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+  animation: heidi-pulse 1.2s ease-in-out 2;
+}
