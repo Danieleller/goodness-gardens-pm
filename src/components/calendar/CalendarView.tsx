@@ -60,7 +60,6 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
     const map = new Map<string, TaskWithRelations[]>();
     for (const task of tasks) {
       if (!task.dueDate) continue;
-      // dueDate is stored as "YYYY-MM-DD" string
       const dateStr = task.dueDate;
       if (!map.has(dateStr)) map.set(dateStr, []);
       map.get(dateStr)!.push(task);
@@ -75,7 +74,6 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
   const calendarDays: (number | null)[] = [];
   for (let i = 0; i < firstDay; i++) calendarDays.push(null);
   for (let d = 1; d <= daysInMonth; d++) calendarDays.push(d);
-  // Fill remaining cells to complete last row
   while (calendarDays.length % 7 !== 0) calendarDays.push(null);
 
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -83,14 +81,14 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
   return (
     <div className="flex flex-col h-full">
       {/* Calendar header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-white">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-[#e8e0d4]">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-slate-900">
+          <h2 className="text-lg font-semibold text-[#2d2520]">
             {MONTH_NAMES[currentMonth]} {currentYear}
           </h2>
           <button
             onClick={goToToday}
-            className="px-2.5 py-1 text-xs font-medium border border-slate-200 rounded-md text-slate-600 hover:bg-slate-50 transition-colors"
+            className="px-2.5 py-1 text-xs font-medium border border-[#e8e0d4] rounded-lg text-stone-500 hover:bg-stone-50 transition-smooth"
           >
             Today
           </button>
@@ -98,13 +96,13 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
         <div className="flex items-center gap-1">
           <button
             onClick={goToPrevMonth}
-            className="p-1.5 rounded-md hover:bg-slate-100 text-slate-500 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400 transition-smooth"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           <button
             onClick={goToNextMonth}
-            className="p-1.5 rounded-md hover:bg-slate-100 text-slate-500 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400 transition-smooth"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -112,11 +110,11 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
       </div>
 
       {/* Day names header */}
-      <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
+      <div className="grid grid-cols-7 border-b border-[#e8e0d4] bg-stone-50/50">
         {DAY_NAMES.map((day) => (
           <div
             key={day}
-            className="px-2 py-2 text-xs font-medium text-slate-500 text-center"
+            className="px-2 py-2 text-[11px] font-medium text-stone-400 text-center uppercase tracking-wide"
           >
             {day}
           </div>
@@ -130,7 +128,7 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
             return (
               <div
                 key={`empty-${idx}`}
-                className="border-b border-r border-slate-100 bg-slate-50/50"
+                className="border-b border-r border-[#e8e0d4]/40 bg-stone-50/30"
               />
             );
           }
@@ -143,8 +141,8 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
           return (
             <div
               key={dateStr}
-              className={`border-b border-r border-slate-100 p-1 overflow-hidden ${
-                isToday ? "bg-green-50/50" : ""
+              className={`border-b border-r border-[#e8e0d4]/40 p-1 overflow-hidden ${
+                isToday ? "bg-emerald-50/30" : ""
               }`}
             >
               <div className="flex items-center justify-between mb-0.5">
@@ -152,13 +150,15 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
                   className={`inline-flex items-center justify-center w-6 h-6 text-xs rounded-full ${
                     isToday
                       ? "bg-[#1a3a2a] text-white font-bold"
-                      : "text-slate-600"
+                      : isPast
+                        ? "text-stone-300"
+                        : "text-stone-500"
                   }`}
                 >
                   {day}
                 </span>
                 {dayTasks.length > 0 && (
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-[10px] text-stone-300">
                     {dayTasks.length}
                   </span>
                 )}
@@ -168,14 +168,14 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
                   <Link
                     key={task.id}
                     href={`/tasks/${task.id}`}
-                    className={`block px-1.5 py-0.5 rounded text-[11px] leading-tight truncate transition-colors ${
+                    className={`block px-1.5 py-0.5 rounded text-[11px] leading-tight truncate transition-smooth ${
                       task.status === "Done"
-                        ? "bg-emerald-100 text-emerald-700 line-through"
+                        ? "bg-stone-100 text-stone-400 line-through"
                         : task.status === "Blocked"
-                          ? "bg-red-100 text-red-700"
+                          ? "bg-amber-50 text-amber-700"
                           : isPast
-                            ? "bg-red-50 text-red-600 font-medium"
-                            : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                            ? "bg-red-50 text-red-500 font-medium"
+                            : "bg-stone-50 text-stone-600 hover:bg-stone-100"
                     }`}
                   >
                     {task.title}
