@@ -15,7 +15,7 @@ import {
   deleteUserGroup,
   addGroupMember,
   removeGroupMember,
-} from "@/actions/groups";
+} from "@/actions/groups"; 
 import {
   ArrowLeft,
   Users,
