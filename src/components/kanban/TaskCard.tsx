@@ -63,7 +63,7 @@ export function TaskCard({
           className={`mt-0.5 cursor-grab active:cursor-grabbing shrink-0 opacity-0 group-hover:opacity-100 transition-smooth ${
             isDarkCard
               ? "text-white/30 hover:text-white/60"
-              : "" style={{ color: "var(--text-3)" }}
+              : "[color:var(--text-3)]"
           }`}
         >
           <GripVertical className="w-3.5 h-3.5" />
@@ -74,7 +74,7 @@ export function TaskCard({
             className={`text-sm font-medium line-clamp-2 block transition-smooth ${
               isDarkCard
                 ? "text-white/90 hover:text-white"
-                : "" style={{ color: "var(--text)" }}
+                : "[color:var(--text)]"
             }`}
           >
             {task.title}
@@ -111,7 +111,7 @@ export function TaskCard({
                 className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-medium shrink-0 ${
                   isDarkCard
                     ? "bg-white/10 text-white/60"
-                    : "" style={{ background: "var(--surface-2)", color: "var(--text-2)" }}
+                    : "bg-[var(--surface-2)] [color:var(--text-2)]"
                 }`}
               >
                 {(task.assignedTo.name || task.assignedTo.email || "?")[0].toUpperCase()}
@@ -126,7 +126,7 @@ export function TaskCard({
                   className={`inline-flex items-center justify-center text-[10px] font-medium rounded-full px-1.5 py-0.5 ${
                     isDarkCard
                       ? "bg-white/10 text-white/50"
-                      : "" style={{ background: "var(--surface-2)", color: "var(--text-3)" }}
+                      : "bg-[var(--surface-2)] [color:var(--text-3)]"
                   }`}
                 >
                   +{task.additionalAssignees!.length}
