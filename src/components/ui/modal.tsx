@@ -55,4 +55,3 @@ export function Modal({
     </dialog>
   );
 }
-redesign: update modal.tsx
