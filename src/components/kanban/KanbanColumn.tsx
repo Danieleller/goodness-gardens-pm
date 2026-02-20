@@ -33,26 +33,26 @@ export function KanbanColumn({
       className={`flex flex-col min-w-[280px] max-w-[320px] shrink-0 rounded-xl overflow-hidden ${
         isRocks
           ? "glass-rocks-column"
-          : `border ${color || "bg-slate-50 border-slate-200"}`
+          : `border ${color || "bg-stone-50/50 border-[#e8e0d4]"}`
       }`}
     >
       <div
-        className={`flex items-center justify-between px-3 py-2.5 border-b ${
-          isRocks ? "border-white/10" : "border-inherit"
+        className={`flex items-center justify-between px-3.5 py-2.5 ${
+          isRocks ? "border-b border-white/10" : "border-b border-[#e8e0d4]/60"
         }`}
       >
         <h3
-          className={`text-sm font-semibold truncate ${
-            isRocks ? "text-white" : "text-slate-700"
+          className={`text-xs font-semibold uppercase tracking-wide truncate ${
+            isRocks ? "text-white" : "text-stone-500"
           }`}
         >
           {title}
         </h3>
         <span
-          className={`text-xs font-medium rounded-full px-2 py-0.5 ${
+          className={`text-[11px] font-medium rounded-md px-2 py-0.5 ${
             isRocks
-              ? "bg-white/10 text-gray-300"
-              : "bg-white text-slate-400"
+              ? "bg-white/10 text-white/60"
+              : "bg-stone-100 text-stone-400"
           }`}
         >
           {tasks.length}
@@ -60,11 +60,11 @@ export function KanbanColumn({
       </div>
       <div
         ref={setNodeRef}
-        className={`flex-1 p-2 space-y-2 overflow-y-auto min-h-[120px] transition-colors ${
+        className={`flex-1 p-2 space-y-2 overflow-y-auto min-h-[120px] transition-smooth ${
           isOver
             ? isRocks
               ? "bg-white/5"
-              : "bg-green-50/50"
+              : "bg-emerald-50/30"
             : ""
         }`}
       >
@@ -78,8 +78,8 @@ export function KanbanColumn({
         </SortableContext>
         {tasks.length === 0 && (
           <div
-            className={`text-center text-xs py-8 ${
-              isRocks ? "text-gray-500" : "text-slate-400"
+            className={`text-center text-[11px] py-8 ${
+              isRocks ? "text-white/30" : "text-stone-300"
             }`}
           >
             Drop tasks here
