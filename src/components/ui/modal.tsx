@@ -36,18 +36,18 @@ export function Modal({
       ref={dialogRef}
       onClose={onClose}
       className={cn(
-        "backdrop:bg-black/40 rounded-xl shadow-xl border-0 p-0 w-full max-w-lg",
+        "backdrop:bg-black/25 backdrop:backdrop-blur-sm rounded-2xl shadow-xl border border-[#e8e0d4] p-0 w-full max-w-lg",
         className
       )}
     >
-      <div className="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-semibold text-[#2d2520]">{title}</h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-md hover:bg-slate-100 text-slate-400"
+            className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-smooth"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
         {children}
@@ -55,3 +55,4 @@ export function Modal({
     </dialog>
   );
 }
+redesign: update modal.tsx
