@@ -777,48 +777,101 @@ export function SettingsClient({
                             <Check className="w-4 h-4" />
                           </button>
                           <button onClick={() => setEditingGroup(null)} className="p-1 text-stone-400 hover:bg-stone-100 rounded">
-                            <XÛ\ÜÓ[YOHËMMÏØ]ÛÙ]
-H
-]Û\ÜÓ[YOH^\ÛHÛ[YY][H^VÈÌLHÙÜÝ\[Y_OÜÙÜÝ\\ØÜ\[Û	Û\ÜÓ[YOH^^È^\ÝÛKMÙÜÝ\\ØÜ\[ÛOÜBÛ\ÜÓ[YOH^^È^\ÝÛKMÙÜÝ\Y[X\Ë[ÝHY[X\ÙÜÝ\Y[X\Ë[ÝOOHHÈÈOÜÙ]
-_BÙ]]Û\ÜÓ[YOH^][\ËXÙ[\Ø\LH]ÛÛÛXÚÏ^Ê
-HOÙ]^[YÜÝ\
-^[YÜÝ\OOHÜÝ\YÈ[ÜÝ\Y
-_BÛ\ÜÓ[YOHLKHÝ[Y[YÝ\Ë\ÝÛKLL^\ÝÛKMÝ\^\ÝÛKML]OHX[YÙHY[X\È\Ù\ÈÛ\ÜÓ[YOHËMMÏØ]ÛÙY][ÑÜÝ\OOHÜÝ\Y	
-]ÛÛÛXÚÏ^Ê
-HOÈÙ]Y][ÑÜÝ\
-ÜÝ\Y
-NÈÙ]Y]ÜÝ\[YJÜÝ\[YJNÈ_BÛ\ÜÓ[YOHLKHÝ[Y[YÝ\Ë\ÝÛKLL^\ÝÛKMÝ\^\ÝÛKML]OH[[YH[Ú[Û\ÜÓ[YOHËMMÏØ]Û]ÛÛÛXÚÏ^Ê
-HO[Q[]QÜÝ\
-ÜÝ\YÜÝ\[YJ_B\ØXY^Ú\Ô[[ßBÛ\ÜÓ[YOHLKHÝ[Y[YÝ\Ë\YML^\ÝÛKMÝ\^\YML\ØXYÜXÚ]KML]OH[]H\ÚÛ\ÜÓ[YOHËMMÏØ]ÛÏ
-_BÙ]Ù]ËÊ^[YY[X\È[[
-ßBÙ^[YÜÝ\OOHÜÝ\Y	
-]Û\ÜÓ[YOHÜ\]Ü\VÈÙNL
-KÍMKLÈË\ÝÛKMLÜXÙK^KLÛ\ÜÓ[YOH^^ÈÛ[YY][H^\ÝÛKMY[X\ÏÜÙÜÝ\Y[X\Ë[ÝOOH	
-Û\ÜÓ[YOH^^È^\ÝÛKMÈY[X\ÈY]Ü
-_BÙÜÝ\Y[X\ËX\
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-sm font-medium text-[#2d2520]">{group.name}</p>
+                          {group.description && <p className="text-xs text-stone-400">{group.description}</p>}
+                          <p className="text-xs text-stone-400">{group.members.length} member{group.members.length !== 1 ? "s" : ""}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => setExpandedGroup(expandedGroup === group.id ? null : group.id)}
+                        className="p-1.5 rounded-md hover:bg-stone-100 text-stone-400 hover:text-stone-500"
+                        title="Manage members"
+                      >
+                        <Users className="w-4 h-4" />
+                      </button>
+                      {editingGroup !== group.id && (
+                        <>
+                          <button
+                            onClick={() => { setEditingGroup(group.id); setEditGroupName(group.name); }}
+                            className="p-1.5 rounded-md hover:bg-stone-100 text-stone-400 hover:text-stone-500"
+                            title="Rename"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteGroup(group.id, group.name)}
+                            disabled={isPending}
+                            className="p-1.5 rounded-md hover:bg-red-50 text-stone-400 hover:text-red-500 disabled:opacity-50"
+                            title="Delete"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
 
-JHO
-]Ù^O^ÛKYHÛ\ÜÓ[YOH^][\ËXÙ[\Ø\L^\ÛHÛK\Ù\[XYÙHÈ
-[YÈÜÏ^ÛK\Ù\[XYÙ_H[HÛ\ÜÓ[YOHËMMÝ[YY[Ï
-H
-]Û\ÜÓ[YOHËMMÝ[YY[Ë\ÝÛKL^][\ËXÙ[\\ÝYKXÙ[\^VÌLHÛ[YY][H^\ÝÛKMÊK\Ù\[YHK\Ù\[XZ[
-VÌKÕ\\Ø\ÙJ
-_BÙ]
-_BÜ[Û\ÜÓ[YOH^LH^\ÝÛKMÛK\Ù\[YHK\Ù\[XZ[OÜÜ[]ÛÛÛXÚÏ^Ê
-HO[T[[ÝSY[X\ÜÝ\YK\Ù\Y
-_B\ØXY^Ú\Ô[[ßBÛ\ÜÓ[YOHLHÝ[YÝ\Ë\YML^\ÝÛKMÝ\^\YML]OH[[ÝHY[X\\Ù\Z[\ÈÛ\ÜÓ[YOHËLËHLËHÏØ]ÛÙ]
-J_BËÊYY[X\ÜÝÛ
-ßB]Û\ÜÓ[YOHLHÙ[XÝ[YOHÛÚ[ÙO^ÊJHOÂY
-K\Ù][YJH[PYY[X\ÜÝ\YK\Ù][YJNÂ_BÛ\ÜÓ[YOH^^ÈÜ\Ü\VÈÙNL
-HÝ[Y[YLKLH^\ÝÛKMLË]Ú]HËY[Ü[Û[YOHÈYY[X\ÛÜ[ÛÚ[]X[\Ù\Â[\
-JHOYÜÝ\Y[X\ËÛÛYJ
-JHOK\Ù\YOOHKY
-JBX\
-
-JHO
-Ü[ÛÙ^O^ÝKYH[YO^ÝKYOÝK[YHK[XZ[BÛÜ[Û
-J_BÜÙ[XÝÙ]Ù]
-_BÙ]
-J_BÙ]Ù]
-_BÙ]Ù]
-NÂB
+                  {/* Expanded members panel */}
+                  {expandedGroup === group.id && (
+                    <div className="border-t border-[#e8e0d4]/60 px-4 py-3 bg-stone-50 space-y-2">
+                      <p className="text-xs font-medium text-stone-400">Members</p>
+                      {group.members.length === 0 && (
+                        <p className="text-xs text-stone-400">No members yet</p>
+                      )}
+                      {group.members.map((m) => (
+                        <div key={m.id} className="flex items-center gap-2 text-sm">
+                          {m.user.image ? (
+                            <img src={m.user.image} alt="" className="w-6 h-6 rounded-full" />
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-stone-200 flex items-center justify-center text-[10px] font-medium text-stone-400">
+                              {(m.user.name || m.user.email)[0].toUpperCase()}
+                            </div>
+                          )}
+                          <span className="flex-1 text-stone-600">{m.user.name || m.user.email}</span>
+                          <button
+                            onClick={() => handleRemoveMember(group.id, m.userId)}
+                            disabled={isPending}
+                            className="p-1 rounded hover:bg-red-50 text-stone-400 hover:text-red-500"
+                            title="Remove member"
+                          >
+                            <UserMinus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                      {/* Add member dropdown */}
+                      <div className="pt-1">
+                        <select
+                          value=""
+                          onChange={(e) => {
+                            if (e.target.value) handleAddMember(group.id, e.target.value);
+                          }}
+                          className="text-xs border border-[#e8e0d4] rounded-md px-2 py-1 text-stone-500 bg-white w-full"
+                        >
+                          <option value="">+ Add member...</option>
+                          {initialUsers
+                            .filter((u) => !group.members.some((m) => m.userId === u.id))
+                            .map((u) => (
+                              <option key={u.id} value={u.id}>
+                                {u.name || u.email}
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
