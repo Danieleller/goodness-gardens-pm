@@ -29,8 +29,8 @@ export function OverlayProvider({ children }: OverlayProviderProps) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
-  const handleClosePalette = useCallback(() => {
-    setCmdPaletteOpen(false);
+  const handleOpenChange = useCallback((open: boolean) => {
+    setCmdPaletteOpen(open);
   }, []);
 
   return (
@@ -38,7 +38,7 @@ export function OverlayProvider({ children }: OverlayProviderProps) {
       {children}
 
       {/* ── Command Palette (⌘K) ── */}
-      <CommandPalette open={cmdPaletteOpen} onClose={handleClosePalette} />
+      <CommandPalette open={cmdPaletteOpen} onOpenChange={handleOpenChange} />
 
       {/* ── Heidi Hint Bubble (bottom-right) ── */}
       <HeidiHintBubble />
