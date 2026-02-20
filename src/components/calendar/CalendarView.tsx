@@ -192,9 +192,9 @@ export function CalendarView({ tasks }: { tasks: TaskWithRelations[] }) {
                       task.status === "Done"
                         ? "bg-[var(--surface-2)] [color:var(--text-3)] line-through"
                         : task.status === "Blocked"
-                          ? "bg-[color-mix(in_srgb,var(--status-blocked)_10%,transparent)] [color:var(--status-blocked)]"
+                          ? "bg-[color-mix(in_srgb,var(--blocked)_10%,transparent)] [color:var(--blocked)]"
                           : isPast
-                            ? "bg-[color-mix(in_srgb,var(--status-overdue)_10%,transparent)] [color:var(--status-overdue)] font-medium"
+                            ? "bg-[color-mix(in_srgb,var(--overdue)_10%,transparent)] [color:var(--overdue)] font-medium"
                             : "bg-[var(--surface-1)] [color:var(--text-2)] hover:bg-[var(--surface-2)]"
                     }`}
                   >
