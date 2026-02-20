@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Sidebar } from "@/components/layout";
+import { saveUserPrefs } from "@/actions/userPrefs";
 
 /* ═══════════════════════════════════════════════════
    HomeShell — Client wrapper for sidebar + content
@@ -17,6 +18,8 @@ interface HomeShellProps {
   teamCount?: number;
   userName?: string;
   userImage?: string | null;
+  /** Server-fetched initial sidebar state */
+  initialCollapsed?: boolean;
 }
 
 export function HomeShell({
@@ -27,8 +30,18 @@ export function HomeShell({
   teamCount,
   userName,
   userImage,
+  initialCollapsed = false,
 }: HomeShellProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(initialCollapsed);
+
+  const handleToggle = useCallback(() => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      // Persist to database (fire-and-forget)
+      saveUserPrefs({ sidebarCollapsed: next }).catch(() => {});
+      return next;
+    });
+  }, []);
 
   return (
     <div className="flex h-screen" style={{ background: "var(--bg)" }}>
@@ -40,7 +53,7 @@ export function HomeShell({
         userName={userName}
         userImage={userImage}
         collapsed={collapsed}
-        onToggleCollapse={() => setCollapsed((prev) => !prev)}
+        onToggleCollapse={handleToggle}
       />
       <div className="flex flex-col flex-1 min-w-0">
         {children}
