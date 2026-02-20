@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { saveUserPrefs } from "@/actions/userPrefs";
 
 type Theme = "light" | "dark" | "system";
 type ResolvedTheme = "light" | "dark";
@@ -35,21 +36,39 @@ function resolveTheme(theme: Theme): ResolvedTheme {
 
 const STORAGE_KEY = "gg-theme-preference";
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
+interface ThemeProviderProps {
+  children: React.ReactNode;
+  /** Server-fetched initial theme (avoids flash) */
+  initialTheme?: Theme;
+}
 
-  // Initialize from localStorage on mount
+export function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
+  const [theme, setThemeState] = useState<Theme>(initialTheme ?? "system");
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(
+    resolveTheme(initialTheme ?? "system")
+  );
+
+  // On mount: apply theme from initialTheme or localStorage fallback
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
-    const initial = stored && ["light", "dark", "system"].includes(stored)
-      ? stored
-      : "system";
-    setThemeState(initial);
-    const resolved = resolveTheme(initial);
-    setResolvedTheme(resolved);
-    document.documentElement.setAttribute("data-theme", resolved);
-  }, []);
+    if (initialTheme) {
+      // Server provided the preference — trust it and cache locally
+      localStorage.setItem(STORAGE_KEY, initialTheme);
+      const resolved = resolveTheme(initialTheme);
+      setResolvedTheme(resolved);
+      document.documentElement.setAttribute("data-theme", resolved);
+    } else {
+      // No server pref — fall back to localStorage
+      const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
+      const initial =
+        stored && ["light", "dark", "system"].includes(stored)
+          ? stored
+          : "system";
+      setThemeState(initial);
+      const resolved = resolveTheme(initial);
+      setResolvedTheme(resolved);
+      document.documentElement.setAttribute("data-theme", resolved);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Listen for system theme changes when in "system" mode
   useEffect(() => {
@@ -70,6 +89,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const resolved = resolveTheme(newTheme);
     setResolvedTheme(resolved);
     document.documentElement.setAttribute("data-theme", resolved);
+
+    // Persist to database (fire-and-forget)
+    saveUserPrefs({ theme: newTheme }).catch(() => {
+      // Silently ignore — localStorage is the primary cache
+    });
   }, []);
 
   return (
