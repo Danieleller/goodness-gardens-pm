@@ -2,17 +2,20 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
 import { OverlayProvider } from "@/components/overlays";
+import { getUserPrefs } from "@/actions/userPrefs";
 
 export const metadata: Metadata = {
   title: "Goodness Gardens \u2014 Task Manager",
   description: "Lightweight task delegation for the Goodness Gardens team",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const prefs = await getUserPrefs();
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -36,7 +39,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased font-sans">
-        <ThemeProvider>
+        <ThemeProvider initialTheme={prefs.theme}>
           <OverlayProvider>{children}</OverlayProvider>
         </ThemeProvider>
       </body>
