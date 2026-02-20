@@ -210,17 +210,17 @@ export function KanbanBoard({
           </div>
           <div className="snapshot-card">
             <div className="flex items-center gap-2 mb-1">
-              <AlertTriangle className="w-3.5 h-3.5" style={{ color: "var(--status-overdue, #f87171)" }} />
+              <AlertTriangle className="w-3.5 h-3.5" style={{ color: "var(--overdue, #f87171)" }} />
               <span className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--text-3)" }}>Overdue</span>
             </div>
-            <p className="text-2xl font-semibold" style={{ color: overdueTasks > 0 ? "var(--status-overdue, #ef4444)" : "var(--text)" }}>{overdueTasks}</p>
+            <p className="text-2xl font-semibold" style={{ color: overdueTasks > 0 ? "var(--overdue, #ef4444)" : "var(--text)" }}>{overdueTasks}</p>
           </div>
           <div className="snapshot-card">
             <div className="flex items-center gap-2 mb-1">
-              <AlertTriangle className="w-3.5 h-3.5" style={{ color: "var(--status-blocked, #fbbf24)" }} />
+              <AlertTriangle className="w-3.5 h-3.5" style={{ color: "var(--blocked, #fbbf24)" }} />
               <span className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--text-3)" }}>Blocked</span>
             </div>
-            <p className="text-2xl font-semibold" style={{ color: blockedTasks > 0 ? "var(--status-blocked, #d97706)" : "var(--text)" }}>{blockedTasks}</p>
+            <p className="text-2xl font-semibold" style={{ color: blockedTasks > 0 ? "var(--blocked, #d97706)" : "var(--text)" }}>{blockedTasks}</p>
           </div>
           <div className="snapshot-card">
             <div className="flex items-center gap-2 mb-1">
