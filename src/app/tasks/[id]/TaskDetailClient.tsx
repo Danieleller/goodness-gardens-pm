@@ -308,7 +308,7 @@ export function TaskDetailClient({
                         onClick={() => handleToggleSubtask(sub.id, !sub.completed)}
                         className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-smooth ${
                           sub.completed
-                            ? "bg-[var(--accent)] border-[#1a3a2a] text-white"
+                            ? "bg-[var(--accent)] border-[var(--accent)] text-white"
                             : "border-[var(--border)] hover:border-[var(--accent)]"
                         }`}
                       >
@@ -589,7 +589,7 @@ export function TaskDetailClient({
                 )}
                 {task.groupAssignments?.map((ga) => (
                   <div key={ga.id} className="flex items-center gap-2 text-sm">
-                    <div className={`w-3 h-3 rounded border shrink-0 ${ga.group?.color || "bg-stone-50 border-[var(--border)]"}`} />
+                    <div className={`w-3 h-3 rounded border shrink-0 ${ga.group?.color || "bg-[var(--surface-2)] border-[var(--border)]"}`} />
                     <span className="flex-1 text-[11px] [color:var(--text-2)] truncate">{ga.group?.name}</span>
                     <button
                       onClick={() => handleRemoveGroup(ga.groupId)}
