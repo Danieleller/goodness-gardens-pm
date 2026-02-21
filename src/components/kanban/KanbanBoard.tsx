@@ -175,7 +175,7 @@ export function KanbanBoard({
             id: "unassigned",
             title: "Unassigned",
             tasks: filteredTasks.filter((t) => !t.assignedToUserId),
-            color: "bg-stone-50/50 border-[#e8e0d4]",
+            color: "",
             isRocks: false,
           },
           ...users.map((user) => ({
@@ -184,7 +184,7 @@ export function KanbanBoard({
             tasks: filteredTasks.filter(
               (t) => t.assignedToUserId === user.id
             ),
-            color: "bg-stone-50/50 border-[#e8e0d4]",
+            color: "",
             isRocks: false,
           })),
         ]
@@ -203,45 +203,45 @@ export function KanbanBoard({
         <div className="grid grid-cols-4 gap-3 px-5 pt-4 pb-2">
           <div className="snapshot-card">
             <div className="flex items-center gap-2 mb-1">
-              <Clock className="w-3.5 h-3.5 text-stone-400" />
-              <span className="text-[11px] font-medium text-stone-400 uppercase tracking-wide">Open</span>
+              <Clock className="w-3.5 h-3.5" style={{ color: "var(--text-3)" }} />
+              <span className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--text-3)" }}>Open</span>
             </div>
-            <p className="text-2xl font-semibold text-[#2d2520]">{totalOpen}</p>
+            <p className="text-2xl font-semibold" style={{ color: "var(--text)" }}>{totalOpen}</p>
           </div>
           <div className="snapshot-card">
             <div className="flex items-center gap-2 mb-1">
-              <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
-              <span className="text-[11px] font-medium text-stone-400 uppercase tracking-wide">Overdue</span>
+              <AlertTriangle className="w-3.5 h-3.5" style={{ color: "var(--overdue, #f87171)" }} />
+              <span className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--text-3)" }}>Overdue</span>
             </div>
-            <p className={`text-2xl font-semibold ${overdueTasks > 0 ? "text-red-500" : "text-[#2d2520]"}`}>{overdueTasks}</p>
+            <p className="text-2xl font-semibold" style={{ color: overdueTasks > 0 ? "var(--overdue, #ef4444)" : "var(--text)" }}>{overdueTasks}</p>
           </div>
           <div className="snapshot-card">
             <div className="flex items-center gap-2 mb-1">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-400" />
-              <span className="text-[11px] font-medium text-stone-400 uppercase tracking-wide">Blocked</span>
+              <AlertTriangle className="w-3.5 h-3.5" style={{ color: "var(--blocked, #fbbf24)" }} />
+              <span className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--text-3)" }}>Blocked</span>
             </div>
-            <p className={`text-2xl font-semibold ${blockedTasks > 0 ? "text-amber-600" : "text-[#2d2520]"}`}>{blockedTasks}</p>
+            <p className="text-2xl font-semibold" style={{ color: blockedTasks > 0 ? "var(--blocked, #d97706)" : "var(--text)" }}>{blockedTasks}</p>
           </div>
           <div className="snapshot-card">
             <div className="flex items-center gap-2 mb-1">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="text-[11px] font-medium text-stone-400 uppercase tracking-wide">Complete</span>
+              <CheckCircle2 className="w-3.5 h-3.5" style={{ color: "var(--accent)" }} />
+              <span className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--text-3)" }}>Complete</span>
             </div>
-            <p className="text-2xl font-semibold text-[#2d2520]">{completionRate}%</p>
+            <p className="text-2xl font-semibold" style={{ color: "var(--text)" }}>{completionRate}%</p>
           </div>
         </div>
       )}
 
       {/* Toolbar */}
-      <div className="flex items-center gap-3 px-5 py-3 border-b border-[#e8e0d4] flex-wrap">
+      <div className="flex items-center gap-3 px-5 py-3 flex-wrap" style={{ borderBottom: "1px solid var(--border)" }}>
         {/* View toggle */}
-        <div className="flex bg-stone-100/60 rounded-lg p-0.5">
+        <div className="flex rounded-lg p-0.5" style={{ background: "var(--surface-2)" }}>
           <button
             onClick={() => setView("person")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-smooth ${
               view === "person"
-                ? "bg-white text-[#2d2520] shadow-sm"
-                : "text-stone-400 hover:text-stone-600"
+                ? "shadow-sm"
+                : ""
             }`}
           >
             <Users className="w-4 h-4" />
@@ -251,8 +251,8 @@ export function KanbanBoard({
             onClick={() => setView("category")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-smooth ${
               view === "category"
-                ? "bg-white text-[#2d2520] shadow-sm"
-                : "text-stone-400 hover:text-stone-600"
+                ? "shadow-sm"
+                : ""
             }`}
           >
             <LayoutGrid className="w-4 h-4" />
@@ -262,8 +262,8 @@ export function KanbanBoard({
             onClick={() => setView("rocks")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-smooth ${
               view === "rocks"
-                ? "bg-[#1a3a2a] text-white shadow-sm"
-                : "text-stone-400 hover:text-stone-600"
+                ? "shadow-sm"
+                : ""
             }`}
           >
             <Target className="w-4 h-4" />
@@ -273,8 +273,8 @@ export function KanbanBoard({
             onClick={() => setView("calendar")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-smooth ${
               view === "calendar"
-                ? "bg-white text-[#2d2520] shadow-sm"
-                : "text-stone-400 hover:text-stone-600"
+                ? "shadow-sm"
+                : ""
             }`}
           >
             <CalendarDays className="w-4 h-4" />
@@ -286,7 +286,7 @@ export function KanbanBoard({
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-sm border border-[#e8e0d4] rounded-lg px-2.5 py-1.5 text-stone-500 bg-white/60 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10 transition-smooth"
+            className="text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 transition-smooth" style={{ border: "1px solid var(--border)", color: "var(--text-2)", background: "var(--surface-1)", boxShadow: "0 0 0 0 transparent" }}
           >
             <option value="">All statuses</option>
             <option value="Backlog">Backlog</option>

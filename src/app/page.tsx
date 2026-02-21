@@ -6,12 +6,16 @@ import { tasks, notifications, categories, rocks, userGroups } from "@/db/schema
 import { eq } from "drizzle-orm";
 import { Header } from "@/components/layout/Header";
 import { KanbanBoard } from "@/components/kanban/KanbanBoard";
+import { HomeShell } from "@/components/layout/HomeShell";
+import { getUserPrefs } from "@/actions/userPrefs";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+
+  const prefs = await getUserPrefs();
 
   const [allTasks, allUsers, userNotifications, allCategories, allRocks, allGroups] = await Promise.all([
     db.query.tasks.findMany({
@@ -43,7 +47,13 @@ export default async function HomePage() {
   ]);
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50">
+    <HomeShell
+      currentPath="/"
+      taskCount={allTasks.length}
+      userName={session.user.name ?? undefined}
+      userImage={session.user.image}
+      initialCollapsed={prefs.sidebarCollapsed}
+    >
       <Header
         user={{
           name: session.user.name,
@@ -64,6 +74,6 @@ export default async function HomePage() {
           rocks={allRocks as any}
         />
       </main>
-    </div>
+    </HomeShell>
   );
 }

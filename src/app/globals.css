@@ -1,45 +1,122 @@
 @import "tailwindcss";
+/* Design System v2 — Goodness Gardens */
 
-:root {
-  --background: #faf8f5;
-  --foreground: #2d2520;
-  --brand: #1a3a2a;
-  --brand-light: #2d5a42;
+/* === Design System v2 -- Design Tokens === */
+
+:root,
+[data-theme="light"] {
+  /* Surfaces */
+  --bg: #F6F7F9;
+  --surface-1: #FFFFFF;
+  --surface-2: #F0F2F5;
+  --border: #E2E8F0;
+
+  /* Typography */
+  --text: #0F172A;
+  --text-2: #475569;
+  --text-3: #94A3B8;
+
+  /* Brand / Accent */
+  --accent: #1C6B52;
+  --accent-hover: #15533F;
+  --accent-soft: #E6F2EE;
+
+  /* Status (micro-use only) */
+  --done: #16A34A;
+  --progress: #2563EB;
+  --blocked: #F97316;
+  --overdue: #DC2626;
+  --warn: #F59E0B;
+
+  /* Glass (light) */
+  --glass-surface: rgba(255,255,255,0.72);
+  --glass-border: rgba(226,232,240,0.9);
+  --overlay-dim: rgba(15,23,42,0.22);
+
+  /* Legacy compat -- map old vars to new */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --brand: var(--accent);
+  --brand-light: var(--accent-hover);
   --brand-accent: #d4c4a8;
-  --border: #e8e0d4;
+
   color-scheme: light;
 }
 
+[data-theme="dark"] {
+  /* Surfaces */
+  --bg: #0B1220;
+  --surface-1: #0F172A;
+  --surface-2: #111C33;
+  --border: #22304A;
+
+  /* Typography */
+  --text: #E5E7EB;
+  --text-2: #AAB4C3;
+  --text-3: #6B778C;
+
+  /* Brand / Accent */
+  --accent: #2AA377;
+  --accent-hover: #238B65;
+  --accent-soft: rgba(42,163,119,0.14);
+
+  /* Status (micro-use only) */
+  --done: #22C55E;
+  --progress: #60A5FA;
+  --blocked: #FB923C;
+  --overdue: #F87171;
+  --warn: #FBBF24;
+
+  /* Glass (dark) */
+  --glass-surface: rgba(17,28,51,0.62);
+  --glass-border: rgba(34,48,74,0.9);
+  --overlay-dim: rgba(0,0,0,0.38);
+
+  /* Legacy compat */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --brand: var(--accent);
+  --brand-light: var(--accent-hover);
+  --brand-accent: #d4c4a8;
+
+  color-scheme: dark;
+}
+
+/* === Tailwind v4 theme bridge === */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* === Base styles === */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 200ms ease, color 200ms ease;
 }
 
-/* Force dark text on form inputs regardless of OS dark mode */
+/* Form inputs adapt to theme */
 input,
 textarea,
 select {
-  color: #2d2520;
+  color: var(--text);
+  background: var(--surface-1);
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #a8a09a;
+  color: var(--text-3);
 }
 
 select option {
-  color: #2d2520;
-  background: #faf8f5;
+  color: var(--text);
+  background: var(--surface-1);
 }
 
 /* Smooth global transitions */
@@ -47,8 +124,18 @@ select option {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* âââ Glass Morphism âââ */
+/* === Glass Morphism (ONLY for transient overlays) === */
+.glass-overlay {
+  background: var(--glass-surface);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 1px 2px rgba(0, 0, 0, 0.04);
+}
 
+/* Legacy glass classes -- preserved for backward compat */
 .glass {
   background: rgba(255, 255, 255, 0.65);
   backdrop-filter: blur(16px) saturate(140%);
@@ -66,6 +153,18 @@ select option {
     0 2px 6px rgba(0, 0, 0, 0.05),
     0 6px 20px rgba(0, 0, 0, 0.03);
   transform: translateY(-1px);
+}
+
+/* Dark-mode override for .glass cards */
+[data-theme="dark"] .glass {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(34, 48, 74, 0.7);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="dark"] .glass:hover {
+  background: rgba(15, 23, 42, 0.80);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18), 0 6px 20px rgba(0, 0, 0, 0.12);
 }
 
 .glass-dark {
@@ -97,78 +196,120 @@ select option {
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
-/* âââ Status Border Indicators âââ */
-
+/* === Status Border Indicators === */
 .status-border-backlog {
-  border-left: 3px solid #a8a29e;
+  border-left: 3px solid var(--text-3);
 }
-
 .status-border-doing {
-  border-left: 3px solid #10b981;
+  border-left: 3px solid var(--progress);
 }
-
 .status-border-blocked {
-  border-left: 3px solid #d97706;
+  border-left: 3px solid var(--blocked);
 }
-
 .status-border-done {
-  border-left: 3px solid #78716c;
+  border-left: 3px solid var(--done);
 }
 
-/* âââ Progress Bars âââ */
-
+/* === Progress Bars === */
 .progress-bar {
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
 .progress-emerald {
   background: linear-gradient(90deg, #10b981, #34d399);
 }
-
 .progress-amber {
   background: linear-gradient(90deg, #d97706, #f59e0b);
 }
-
 .progress-red {
   background: linear-gradient(90deg, #dc2626, #ef4444);
 }
 
-/* âââ Rocks Section âââ */
-
+/* === Rocks Section === */
 .rocks-header-gradient {
   background: linear-gradient(to bottom, #141412 0%, #1c1c18 100%);
 }
 
-/* âââ Transition Utilities âââ */
-
+/* === Transition Utilities === */
 .transition-smooth {
   transition: all 150ms ease-out;
 }
-
 .transition-gentle {
   transition: all 200ms ease-in-out;
 }
-
 .hover-lift {
   transition: all 150ms ease-out;
 }
-
 .hover-lift:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   transform: translateY(-1px);
 }
 
-/* âââ Snapshot Cards âââ */
-
+/* === Snapshot Cards === */
 .snapshot-card {
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--surface-1);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px 20px;
   transition: all 150ms ease-out;
 }
-
 .snapshot-card:hover {
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--surface-2);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* === 8pt spacing helpers === */
+.gap-sp-1 { gap: 4px; }
+.gap-sp-2 { gap: 8px; }
+.gap-sp-3 { gap: 12px; }
+.gap-sp-4 { gap: 16px; }
+.gap-sp-6 { gap: 24px; }
+.gap-sp-8 { gap: 32px; }
+.gap-sp-12 { gap: 48px; }
+
+
+/* ═══ Overlay Animations ═══ */
+@keyframes overlay-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-in {
+  animation: overlay-in 180ms ease-out;
+}
+
+/* Drawer slide-in (right side) */
+@keyframes drawer-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.drawer-enter {
+  animation: drawer-in 220ms ease-out;
+}
+
+/* ═══ Heidi Highlight ═══ */
+@keyframes heidi-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 var(--accent-soft);
+  }
+  50% {
+    box-shadow: 0 0 0 6px var(--accent-soft);
+  }
+}
+
+.heidi-highlight {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 6px;
+  animation: heidi-pulse 1.2s ease-in-out 2;
 }

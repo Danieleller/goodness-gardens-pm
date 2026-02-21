@@ -118,12 +118,13 @@ export const notifications = sqliteTable("notifications", {
 });
 
 // ââ Relations ââââââââââââââââââââââââââââââââââââââââââ
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ one, many }) => ({
   assignedTasks: many(tasks, { relationName: "assignedTo" }),
   createdTasks: many(tasks, { relationName: "createdBy" }),
   notifications: many(notifications),
   groupMemberships: many(userGroupMembers),
   additionalTaskAssignments: many(taskAssignees, { relationName: "taskAssigneeUser" }),
+  prefs: one(userPrefs),
 }));
 
 export const tasksRelations = relations(tasks, ({ one, many }) => ({
@@ -339,6 +340,34 @@ export const taskGroupAssignmentsRelations = relations(taskGroupAssignments, ({ 
   }),
 }));
 
+// ———— User Preferences ————————————————————————————
+export const userPrefs = sqliteTable("user_prefs", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
+  theme: text("theme", { enum: ["light", "dark", "system"] })
+    .notNull()
+    .default("system"),
+  sidebarCollapsed: integer("sidebar_collapsed", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  heidiEnabled: integer("heidi_enabled", { mode: "boolean" })
+    .notNull()
+    .default(true),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export const userPrefsRelations = relations(userPrefs, ({ one }) => ({
+  user: one(users, {
+    fields: [userPrefs.userId],
+    references: [users.id],
+  }),
+}));
+
 // ââ Type exports âââââââââââââââââââââââââââââââââââââââ
 export type User = typeof users.$inferSelect;
 export type Task = typeof tasks.$inferSelect;
@@ -351,3 +380,5 @@ export type UserGroupMember = typeof userGroupMembers.$inferSelect;
 export type TaskAssignee = typeof taskAssignees.$inferSelect;
 export type TaskGroupAssignment = typeof taskGroupAssignments.$inferSelect;
 export type Subtask = typeof subtasks.$inferSelect;
+export type UserPrefs = typeof userPrefs.$inferSelect;
+

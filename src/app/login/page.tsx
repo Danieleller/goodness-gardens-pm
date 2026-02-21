@@ -6,17 +6,17 @@ export default async function LoginPage() {
   if (session) redirect("/");
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 w-full max-w-sm text-center">
+    <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center p-4">
+      <div className="bg-[var(--surface-1)] rounded-xl shadow-sm border border-[var(--border)] p-8 w-full max-w-sm text-center">
         <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 bg-[#1a3a2a] rounded-xl flex items-center justify-center">
+          <div className="w-16 h-16 bg-[var(--accent)] rounded-xl flex items-center justify-center">
             <span className="text-white font-bold text-xl">GG</span>
           </div>
         </div>
-        <h1 className="text-xl font-semibold text-slate-900 mb-1">
+        <h1 className="text-xl font-semibold [color:var(--text)] mb-1">
           Goodness Gardens
         </h1>
-        <p className="text-sm text-slate-500 mb-6">Task Manager</p>
+        <p className="text-sm [color:var(--text-2)] mb-6">Task Manager</p>
         <form
           action={async () => {
             "use server";
@@ -25,7 +25,7 @@ export default async function LoginPage() {
         >
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-3 bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+            className="w-full flex items-center justify-center gap-3 bg-[var(--surface-1)] border border-[var(--border)] rounded-lg px-4 py-2.5 text-sm font-medium [color:var(--text-2)] hover:bg-[var(--surface-2)] transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path

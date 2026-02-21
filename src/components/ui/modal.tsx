@@ -36,16 +36,16 @@ export function Modal({
       ref={dialogRef}
       onClose={onClose}
       className={cn(
-        "backdrop:bg-black/25 backdrop:backdrop-blur-sm rounded-2xl shadow-xl border border-[#e8e0d4] p-0 w-full max-w-lg",
+        "backdrop:bg-black/25 backdrop:backdrop-blur-sm rounded-2xl shadow-xl border border-[var(--border)] p-0 w-full max-w-lg",
         className
       )}
     >
       <div className="p-6">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-semibold text-[#2d2520]">{title}</h2>
+          <h2 className="text-lg font-semibold [color:var(--text)]">{title}</h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400 hover:text-stone-600 transition-smooth"
+            className="p-1.5 rounded-lg hover:bg-[var(--surface-2)] [color:var(--text-3)] hover:[color:var(--text-2)] transition-smooth"
           >
             <X className="w-4 h-4" />
           </button>

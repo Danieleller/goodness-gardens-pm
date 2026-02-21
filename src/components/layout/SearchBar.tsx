@@ -45,14 +45,30 @@ export function SearchBar() {
   return (
     <div ref={ref} className="relative w-full max-w-md">
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+        <Search
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+          style={{ color: "var(--text-3)" }}
+        />
         <input
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.length >= 2 && setOpen(true)}
           placeholder="Search tasks..."
-          className="w-full pl-9 pr-8 py-2 text-sm bg-stone-100/60 border border-transparent rounded-lg focus:bg-white focus:border-[#e8e0d4] focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10 transition-smooth placeholder:text-stone-400"
+          className="w-full pl-9 pr-8 py-2 text-sm border border-transparent rounded-lg focus:outline-none focus:ring-2 transition-smooth"
+          style={{
+            background: "var(--surface-2)",
+            color: "var(--text)",
+            borderColor: "transparent",
+          }}
+          onFocusCapture={(e) => {
+            e.currentTarget.style.background = "var(--surface-1)";
+            e.currentTarget.style.borderColor = "var(--border)";
+          }}
+          onBlurCapture={(e) => {
+            e.currentTarget.style.background = "var(--surface-2)";
+            e.currentTarget.style.borderColor = "transparent";
+          }}
         />
         {query && (
           <button
@@ -60,7 +76,8 @@ export function SearchBar() {
               setQuery("");
               setOpen(false);
             }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600 transition-smooth"
+            className="absolute right-2 top-1/2 -translate-y-1/2 transition-smooth"
+            style={{ color: "var(--text-3)" }}
           >
             <X className="w-4 h-4" />
           </button>
@@ -68,13 +85,19 @@ export function SearchBar() {
       </div>
 
       {open && (
-        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white/95 backdrop-blur-md rounded-xl border border-[#e8e0d4] shadow-lg z-50 max-h-80 overflow-y-auto">
+        <div
+          className="absolute top-full left-0 right-0 mt-1.5 backdrop-blur-md rounded-xl shadow-lg z-50 max-h-80 overflow-y-auto"
+          style={{
+            background: "color-mix(in srgb, var(--surface-1) 95%, transparent)",
+            border: "1px solid var(--border)",
+          }}
+        >
           {loading ? (
-            <div className="p-4 text-center text-sm text-stone-400">
+            <div className="p-4 text-center text-sm" style={{ color: "var(--text-3)" }}>
               Searching...
             </div>
           ) : results.length === 0 ? (
-            <div className="p-4 text-center text-sm text-stone-400">
+            <div className="p-4 text-center text-sm" style={{ color: "var(--text-3)" }}>
               No tasks found
             </div>
           ) : (
@@ -83,21 +106,25 @@ export function SearchBar() {
                 key={task.id}
                 href={`/tasks/${task.id}`}
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 hover:bg-stone-50 border-b border-stone-100 last:border-0 transition-smooth"
+                className="flex items-center gap-3 px-4 py-3 transition-smooth"
+                style={{ borderBottom: "1px solid var(--border)" }}
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-[#2d2520] truncate">
+                  <p
+                    className="text-sm font-medium truncate"
+                    style={{ color: "var(--text)" }}
+                  >
                     {task.title}
                   </p>
                   <div className="flex items-center gap-2 mt-1">
                     <Badge className={PRIORITY_COLORS[task.priority]}>
                       {task.priority}
                     </Badge>
-                    <span className="text-xs text-stone-400">
+                    <span className="text-xs" style={{ color: "var(--text-3)" }}>
                       {task.category}
                     </span>
                     {task.dueDate && (
-                      <span className="text-xs text-stone-400">
+                      <span className="text-xs" style={{ color: "var(--text-3)" }}>
                         {formatDate(task.dueDate)}
                       </span>
                     )}
