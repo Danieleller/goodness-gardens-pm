@@ -48,9 +48,15 @@ export function getStatusBorderClass(status: string): string {
   return map[status] || "status-border-backlog";
 }
 
+/** Parse a YYYY-MM-DD string into a local Date (no UTC shift). */
+function parseLocalDate(date: string): Date {
+  const [year, month, day] = date.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
 export function formatDate(date: string | null | undefined): string {
   if (!date) return "";
-  return new Date(date).toLocaleDateString("en-US", {
+  return parseLocalDate(date).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
   });
@@ -58,5 +64,5 @@ export function formatDate(date: string | null | undefined): string {
 
 export function isOverdue(date: string | null | undefined): boolean {
   if (!date) return false;
-  return new Date(date) < new Date(new Date().toDateString());
+  return parseLocalDate(date) < new Date(new Date().toDateString());
 }
