@@ -152,20 +152,20 @@ export function TaskDetailClient({
   const availableGroups = groups.filter((g) => !assignedGroupIds.has(g.id));
 
   return (
-    <div className="min-h-screen bg-[#faf8f5]">
+    <div className="min-h-screen bg-[var(--bg)]">
       {/* Top bar */}
-      <div className="bg-[#faf8f5]/80 backdrop-blur-md border-b border-[#e8e0d4] px-4 py-3 sticky top-0 z-30">
+      <div className="bg-[var(--bg)]/80 backdrop-blur-md border-b border-[var(--border)] px-4 py-3 sticky top-0 z-30">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           <Link
             href="/"
-            className="flex items-center gap-2 text-sm text-stone-400 hover:text-stone-600 transition-smooth"
+            className="flex items-center gap-2 text-sm [color:var(--text-3)] hover:[color:var(--text-2)] transition-smooth"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to board
           </Link>
           <button
             onClick={handleDelete}
-            className="flex items-center gap-1 text-sm text-stone-400 hover:text-red-500 transition-smooth"
+            className="flex items-center gap-1 text-sm [color:var(--text-3)] hover:text-red-500 transition-smooth"
           >
             <Trash2 className="w-4 h-4" />
             Delete
@@ -179,20 +179,20 @@ export function TaskDetailClient({
           {/* Left column â Main content */}
           <div className="space-y-5">
             {/* Title + description */}
-            <div className="bg-white/60 rounded-xl border border-[#e8e0d4] p-5">
+            <div className="bg-[var(--surface-1)] rounded-xl border border-[var(--border)] p-5">
               {editing ? (
                 <div className="space-y-3">
                   <input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    className="text-xl font-semibold w-full border-b-2 border-[#e8e0d4] bg-transparent px-1 py-2 text-[#2d2520] focus:outline-none focus:border-[#1a3a2a] transition-smooth"
+                    className="text-xl font-semibold w-full border-b-2 border-[var(--border)] bg-transparent px-1 py-2 [color:var(--text)] focus:outline-none focus:border-[var(--accent)] transition-smooth"
                   />
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     rows={3}
                     placeholder="Add a description..."
-                    className="w-full border-b border-[#e8e0d4] bg-transparent px-1 py-2 text-sm text-[#2d2520] placeholder:text-stone-300 focus:outline-none focus:border-[#1a3a2a] transition-smooth resize-none"
+                    className="w-full border-b border-[var(--border)] bg-transparent px-1 py-2 text-sm [color:var(--text)] placeholder:[color:var(--text-3)] focus:outline-none focus:border-[var(--accent)] transition-smooth resize-none"
                   />
                   <div className="flex gap-2">
                     <button
@@ -201,7 +201,7 @@ export function TaskDetailClient({
                         handleUpdate("description", description);
                         setEditing(false);
                       }}
-                      className="px-3 py-1.5 bg-[#1a3a2a] text-white text-sm rounded-lg hover:bg-[#2d5a42] transition-smooth"
+                      className="px-3 py-1.5 bg-[var(--accent)] text-white text-sm rounded-lg hover:bg-[var(--accent)]/90 transition-smooth"
                     >
                       Save
                     </button>
@@ -211,7 +211,7 @@ export function TaskDetailClient({
                         setDescription(task.description || "");
                         setEditing(false);
                       }}
-                      className="px-3 py-1.5 text-stone-500 text-sm hover:bg-stone-100 rounded-lg transition-smooth"
+                      className="px-3 py-1.5 [color:var(--text-2)] text-sm hover:bg-[var(--surface-2)] rounded-lg transition-smooth"
                     >
                       Cancel
                     </button>
@@ -222,13 +222,13 @@ export function TaskDetailClient({
                   onClick={() => setEditing(true)}
                   className="cursor-pointer group"
                 >
-                  <h1 className="text-xl font-semibold text-[#2d2520] group-hover:text-[#1a3a2a] transition-smooth">
+                  <h1 className="text-xl font-semibold [color:var(--text)] group-hover:[color:var(--accent)] transition-smooth">
                     {task.title}
                   </h1>
                   {task.description ? (
-                    <p className="mt-2 text-sm text-stone-500 leading-relaxed">{task.description}</p>
+                    <p className="mt-2 text-sm [color:var(--text-2)] leading-relaxed">{task.description}</p>
                   ) : (
-                    <p className="mt-2 text-sm text-stone-300 italic">
+                    <p className="mt-2 text-sm [color:var(--text-3)] italic">
                       Click to add a description...
                     </p>
                   )}
@@ -237,20 +237,20 @@ export function TaskDetailClient({
             </div>
 
             {/* Sub-tasks */}
-            <div className="bg-white/60 rounded-xl border border-[#e8e0d4] p-5">
+            <div className="bg-[var(--surface-1)] rounded-xl border border-[var(--border)] p-5">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="flex items-center gap-2 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                <h2 className="flex items-center gap-2 text-xs font-semibold [color:var(--text-2)] uppercase tracking-wide">
                   <ListChecks className="w-4 h-4" />
                   Sub-tasks
                   {(task.subtasks?.length ?? 0) > 0 && (
-                    <span className="text-stone-400 font-normal normal-case">
+                    <span className="[color:var(--text-3)] font-normal normal-case">
                       {task.subtasks?.filter((s) => s.completed).length}/{task.subtasks?.length}
                     </span>
                   )}
                 </h2>
                 <button
                   onClick={() => setShowAddSubtask(!showAddSubtask)}
-                  className="flex items-center gap-1 text-xs text-[#1a3a2a] hover:text-[#2d5a42] transition-smooth"
+                  className="flex items-center gap-1 text-xs [color:var(--accent)] hover:[color:var(--accent)] transition-smooth"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   Add
@@ -258,9 +258,9 @@ export function TaskDetailClient({
               </div>
 
               {(task.subtasks?.length ?? 0) > 0 && (
-                <div className="w-full bg-stone-100 rounded-full h-1.5 mb-3">
+                <div className="w-full bg-[var(--surface-2)] rounded-full h-1.5 mb-3">
                   <div
-                    className="bg-[#1a3a2a] h-1.5 rounded-full transition-all"
+                    className="bg-[var(--accent)] h-1.5 rounded-full transition-all"
                     style={{
                       width: `${Math.round(
                         ((task.subtasks?.filter((s) => s.completed).length ?? 0) /
@@ -281,12 +281,12 @@ export function TaskDetailClient({
                     onChange={(e) => setNewSubtaskTitle(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleCreateSubtask()}
                     placeholder="What needs to be done?"
-                    className="flex-1 border border-[#e8e0d4] rounded-lg px-3 py-1.5 text-sm bg-white/60 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10 transition-smooth"
+                    className="flex-1 border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm bg-[var(--surface-1)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10 transition-smooth"
                   />
                   <button
                     onClick={handleCreateSubtask}
                     disabled={isPending || !newSubtaskTitle.trim()}
-                    className="px-3 py-1.5 bg-[#1a3a2a] text-white text-sm rounded-lg disabled:opacity-50 hover:bg-[#2d5a42] transition-smooth"
+                    className="px-3 py-1.5 bg-[var(--accent)] text-white text-sm rounded-lg disabled:opacity-50 hover:bg-[var(--accent)]/90 transition-smooth"
                   >
                     Add
                   </button>
@@ -295,7 +295,7 @@ export function TaskDetailClient({
 
               <div className="space-y-1">
                 {(!task.subtasks || task.subtasks.length === 0) && !showAddSubtask && (
-                  <p className="text-xs text-stone-300">No sub-tasks yet</p>
+                  <p className="text-xs [color:var(--text-3)]">No sub-tasks yet</p>
                 )}
                 {task.subtasks
                   ?.sort((a, b) => a.sortOrder - b.sortOrder)
@@ -308,8 +308,8 @@ export function TaskDetailClient({
                         onClick={() => handleToggleSubtask(sub.id, !sub.completed)}
                         className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-smooth ${
                           sub.completed
-                            ? "bg-[#1a3a2a] border-[#1a3a2a] text-white"
-                            : "border-stone-300 hover:border-[#1a3a2a]"
+                            ? "bg-[var(--accent)] border-[#1a3a2a] text-white"
+                            : "border-[var(--border)] hover:border-[var(--accent)]"
                         }`}
                       >
                         {sub.completed && <Check className="w-3 h-3" />}
@@ -317,15 +317,15 @@ export function TaskDetailClient({
                       <span
                         className={`flex-1 text-sm ${
                           sub.completed
-                            ? "text-stone-400 line-through"
-                            : "text-[#2d2520]"
+                            ? "[color:var(--text-3)] line-through"
+                            : "[color:var(--text)]"
                         }`}
                       >
                         {sub.title}
                       </span>
                       <button
                         onClick={() => handleDeleteSubtask(sub.id)}
-                        className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-50 text-stone-400 hover:text-red-500 transition-smooth"
+                        className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-50 [color:var(--text-3)] hover:text-red-500 transition-smooth"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -335,49 +335,49 @@ export function TaskDetailClient({
             </div>
 
             {/* Activity / Audit Trail â collapsible */}
-            <div className="bg-white/60 rounded-xl border border-[#e8e0d4] overflow-hidden">
+            <div className="bg-[var(--surface-1)] rounded-xl border border-[var(--border)] overflow-hidden">
               <button
                 onClick={() => setShowActivity(!showActivity)}
-                className="w-full flex items-center justify-between px-5 py-3 hover:bg-stone-50/50 transition-smooth"
+                className="w-full flex items-center justify-between px-5 py-3 hover:bg-[var(--surface-1)] transition-smooth"
               >
-                <h2 className="flex items-center gap-2 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                <h2 className="flex items-center gap-2 text-xs font-semibold [color:var(--text-2)] uppercase tracking-wide">
                   <Activity className="w-4 h-4" />
                   Activity
-                  <span className="text-stone-400 font-normal normal-case">({task.auditLogs.length})</span>
+                  <span className="[color:var(--text-3)] font-normal normal-case">({task.auditLogs.length})</span>
                 </h2>
-                <ChevronDown className={`w-4 h-4 text-stone-300 transition-smooth ${showActivity ? "rotate-180" : ""}`} />
+                <ChevronDown className={`w-4 h-4 [color:var(--text-3)] transition-smooth ${showActivity ? "rotate-180" : ""}`} />
               </button>
 
               {showActivity && (
-                <div className="px-5 pb-4 space-y-3 border-t border-[#e8e0d4]/60">
+                <div className="px-5 pb-4 space-y-3 border-t border-[var(--border)]/60">
                   <div className="pt-3" />
                   {task.auditLogs.map((log) => (
                     <div key={log.id} className="flex gap-3">
-                      <div className="w-6 h-6 rounded-full bg-stone-100 flex items-center justify-center text-[10px] font-medium text-stone-500 shrink-0 mt-0.5">
+                      <div className="w-6 h-6 rounded-full bg-[var(--surface-2)] flex items-center justify-center text-[10px] font-medium [color:var(--text-2)] shrink-0 mt-0.5">
                         {(log.user?.name || log.user?.email || "?")[0].toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-stone-600">
-                          <span className="font-medium text-[#2d2520]">
+                        <p className="text-sm [color:var(--text-2)]">
+                          <span className="font-medium [color:var(--text)]">
                             {log.user?.name || log.user?.email}
                           </span>{" "}
                           {ACTION_LABELS[log.action] || log.action}
                           {log.oldValue && log.newValue && (
-                            <span className="text-stone-400">
+                            <span className="[color:var(--text-3)]">
                               {" "}
                               from{" "}
                               <span className="line-through">{log.oldValue}</span> to{" "}
-                              <span className="font-medium text-stone-600">{log.newValue}</span>
+                              <span className="font-medium [color:var(--text-2)]">{log.newValue}</span>
                             </span>
                           )}
                           {!log.oldValue && log.newValue && log.action !== "created" && (
-                            <span className="text-stone-400">
+                            <span className="[color:var(--text-3)]">
                               {" "}
-                              to <span className="font-medium text-stone-600">{log.newValue}</span>
+                              to <span className="font-medium [color:var(--text-2)]">{log.newValue}</span>
                             </span>
                           )}
                         </p>
-                        <p className="text-[11px] text-stone-300 mt-0.5">
+                        <p className="text-[11px] [color:var(--text-3)] mt-0.5">
                           {new Date(log.createdAt).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
@@ -389,7 +389,7 @@ export function TaskDetailClient({
                     </div>
                   ))}
                   {task.auditLogs.length === 0 && (
-                    <p className="text-sm text-stone-300 text-center py-4">
+                    <p className="text-sm [color:var(--text-3)] text-center py-4">
                       No activity yet
                     </p>
                   )}
@@ -401,15 +401,15 @@ export function TaskDetailClient({
           {/* Right column â Properties sidebar */}
           <div className="space-y-4">
             {/* Status & Priority */}
-            <div className="bg-white/60 rounded-xl border border-[#e8e0d4] p-4 space-y-3">
+            <div className="bg-[var(--surface-1)] rounded-xl border border-[var(--border)] p-4 space-y-3">
               <div>
-                <label className="text-[11px] font-medium text-stone-400 uppercase tracking-wide mb-1.5 block">
+                <label className="text-[11px] font-medium [color:var(--text-3)] uppercase tracking-wide mb-1.5 block">
                   Status
                 </label>
                 <select
                   value={task.status}
                   onChange={(e) => handleUpdate("status", e.target.value)}
-                  className="w-full border border-[#e8e0d4] rounded-lg px-3 py-1.5 text-sm text-[#2d2520] bg-white/60 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10 transition-smooth"
+                  className="w-full border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm [color:var(--text)] bg-[var(--surface-1)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10 transition-smooth"
                 >
                   {STATUSES.map((s) => (
                     <option key={s} value={s}>
@@ -420,7 +420,7 @@ export function TaskDetailClient({
               </div>
 
               <div>
-                <label className="flex items-center gap-1.5 text-[11px] font-medium text-stone-400 uppercase tracking-wide mb-1.5">
+                <label className="flex items-center gap-1.5 text-[11px] font-medium [color:var(--text-3)] uppercase tracking-wide mb-1.5">
                   <UserIcon className="w-3.5 h-3.5" />
                   Primary Assignee
                 </label>
@@ -429,7 +429,7 @@ export function TaskDetailClient({
                   onChange={(e) =>
                     handleUpdate("assignedToUserId", e.target.value || null)
                   }
-                  className="w-full border border-[#e8e0d4] rounded-lg px-3 py-1.5 text-sm text-[#2d2520] bg-white/60 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10 transition-smooth"
+                  className="w-full border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm [color:var(--text)] bg-[var(--surface-1)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10 transition-smooth"
                 >
                   <option value="">Unassigned</option>
                   {users.map((u) => (
@@ -441,14 +441,14 @@ export function TaskDetailClient({
               </div>
 
               <div>
-                <label className="flex items-center gap-1.5 text-[11px] font-medium text-stone-400 uppercase tracking-wide mb-1.5">
+                <label className="flex items-center gap-1.5 text-[11px] font-medium [color:var(--text-3)] uppercase tracking-wide mb-1.5">
                   <FolderOpen className="w-3.5 h-3.5" />
                   Category
                 </label>
                 <select
                   value={task.category}
                   onChange={(e) => handleUpdate("category", e.target.value)}
-                  className="w-full border border-[#e8e0d4] rounded-lg px-3 py-1.5 text-sm text-[#2d2520] bg-white/60 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10 transition-smooth"
+                  className="w-full border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm [color:var(--text)] bg-[var(--surface-1)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10 transition-smooth"
                 >
                   {categories.map((c) => (
                     <option key={c.name} value={c.name}>
@@ -459,7 +459,7 @@ export function TaskDetailClient({
               </div>
 
               <div>
-                <label className="flex items-center gap-1.5 text-[11px] font-medium text-stone-400 uppercase tracking-wide mb-1.5">
+                <label className="flex items-center gap-1.5 text-[11px] font-medium [color:var(--text-3)] uppercase tracking-wide mb-1.5">
                   <Calendar className="w-3.5 h-3.5" />
                   Deadline
                 </label>
@@ -469,20 +469,20 @@ export function TaskDetailClient({
                   onChange={(e) =>
                     handleUpdate("dueDate", e.target.value || null)
                   }
-                  className={`w-full border rounded-lg px-3 py-1.5 text-sm bg-white/60 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10 transition-smooth ${
+                  className={`w-full border rounded-lg px-3 py-1.5 text-sm bg-[var(--surface-1)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10 transition-smooth ${
                     overdue
                       ? "border-red-300 text-red-500"
-                      : "border-[#e8e0d4] text-[#2d2520]"
+                      : "border-[var(--border)] [color:var(--text)]"
                   }`}
                 />
               </div>
 
               <div>
-                <label className="flex items-center gap-1.5 text-[11px] font-medium text-stone-400 uppercase tracking-wide mb-1.5">
+                <label className="flex items-center gap-1.5 text-[11px] font-medium [color:var(--text-3)] uppercase tracking-wide mb-1.5">
                   <Clock className="w-3.5 h-3.5" />
                   Created
                 </label>
-                <p className="text-sm text-stone-500 px-1">
+                <p className="text-sm [color:var(--text-2)] px-1">
                   {formatDate(task.createdAt?.toString())} by{" "}
                   {task.createdBy?.name || task.createdBy?.email}
                 </p>
@@ -490,16 +490,16 @@ export function TaskDetailClient({
             </div>
 
             {/* Additional Assignees */}
-            <div className="bg-white/60 rounded-xl border border-[#e8e0d4] p-4">
+            <div className="bg-[var(--surface-1)] rounded-xl border border-[var(--border)] p-4">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="flex items-center gap-2 text-[11px] font-semibold text-stone-400 uppercase tracking-wide">
+                <h2 className="flex items-center gap-2 text-[11px] font-semibold [color:var(--text-3)] uppercase tracking-wide">
                   <Users className="w-3.5 h-3.5" />
                   Team
                 </h2>
                 {availableUsers.length > 0 && (
                   <button
                     onClick={() => setShowAddAssignee(!showAddAssignee)}
-                    className="text-stone-400 hover:text-[#1a3a2a] transition-smooth"
+                    className="[color:var(--text-3)] hover:[color:var(--accent)] transition-smooth"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -511,7 +511,7 @@ export function TaskDetailClient({
                   <select
                     value=""
                     onChange={(e) => e.target.value && handleAddAssignee(e.target.value)}
-                    className="w-full border border-[#e8e0d4] rounded-lg px-3 py-1.5 text-sm text-[#2d2520] bg-white/60 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
+                    className="w-full border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm [color:var(--text)] bg-[var(--surface-1)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10"
                   >
                     <option value="">Select a person...</option>
                     {availableUsers.map((u) => (
@@ -525,22 +525,22 @@ export function TaskDetailClient({
 
               <div className="space-y-1.5">
                 {(!task.additionalAssignees || task.additionalAssignees.length === 0) && (
-                  <p className="text-[11px] text-stone-300">No additional assignees</p>
+                  <p className="text-[11px] [color:var(--text-3)]">No additional assignees</p>
                 )}
                 {task.additionalAssignees?.map((a) => (
                   <div key={a.id} className="flex items-center gap-2 text-sm">
                     {a.user?.image ? (
-                      <img src={a.user.image} alt="" className="w-5 h-5 rounded-full ring-1 ring-stone-200" />
+                      <img src={a.user.image} alt="" className="w-5 h-5 rounded-full ring-1 ring-[var(--border)]" />
                     ) : (
-                      <div className="w-5 h-5 rounded-full bg-stone-100 flex items-center justify-center text-[10px] font-medium text-stone-500">
+                      <div className="w-5 h-5 rounded-full bg-[var(--surface-2)] flex items-center justify-center text-[10px] font-medium [color:var(--text-2)]">
                         {(a.user?.name || a.user?.email || "?")[0].toUpperCase()}
                       </div>
                     )}
-                    <span className="flex-1 text-[11px] text-stone-600 truncate">{a.user?.name || a.user?.email}</span>
+                    <span className="flex-1 text-[11px] [color:var(--text-2)] truncate">{a.user?.name || a.user?.email}</span>
                     <button
                       onClick={() => handleRemoveAssignee(a.userId)}
                       disabled={isPending}
-                      className="p-0.5 rounded hover:bg-red-50 text-stone-300 hover:text-red-500 transition-smooth"
+                      className="p-0.5 rounded hover:bg-red-50 [color:var(--text-3)] hover:text-red-500 transition-smooth"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -550,16 +550,16 @@ export function TaskDetailClient({
             </div>
 
             {/* Group Assignments */}
-            <div className="bg-white/60 rounded-xl border border-[#e8e0d4] p-4">
+            <div className="bg-[var(--surface-1)] rounded-xl border border-[var(--border)] p-4">
               <div className="flex items-center justify-between mb-2">
-                <h2 className="flex items-center gap-2 text-[11px] font-semibold text-stone-400 uppercase tracking-wide">
+                <h2 className="flex items-center gap-2 text-[11px] font-semibold [color:var(--text-3)] uppercase tracking-wide">
                   <UsersRound className="w-3.5 h-3.5" />
                   Groups
                 </h2>
                 {availableGroups.length > 0 && (
                   <button
                     onClick={() => setShowAddGroup(!showAddGroup)}
-                    className="text-stone-400 hover:text-[#1a3a2a] transition-smooth"
+                    className="[color:var(--text-3)] hover:[color:var(--accent)] transition-smooth"
                   >
                     <Plus className="w-3.5 h-3.5" />
                   </button>
@@ -571,7 +571,7 @@ export function TaskDetailClient({
                   <select
                     value=""
                     onChange={(e) => e.target.value && handleAddGroup(e.target.value)}
-                    className="w-full border border-[#e8e0d4] rounded-lg px-3 py-1.5 text-sm text-[#2d2520] bg-white/60 focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
+                    className="w-full border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm [color:var(--text)] bg-[var(--surface-1)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10"
                   >
                     <option value="">Select a group...</option>
                     {availableGroups.map((g) => (
@@ -585,16 +585,16 @@ export function TaskDetailClient({
 
               <div className="space-y-1.5">
                 {(!task.groupAssignments || task.groupAssignments.length === 0) && (
-                  <p className="text-[11px] text-stone-300">No group assignments</p>
+                  <p className="text-[11px] [color:var(--text-3)]">No group assignments</p>
                 )}
                 {task.groupAssignments?.map((ga) => (
                   <div key={ga.id} className="flex items-center gap-2 text-sm">
-                    <div className={`w-3 h-3 rounded border shrink-0 ${ga.group?.color || "bg-stone-50 border-stone-200"}`} />
-                    <span className="flex-1 text-[11px] text-stone-600 truncate">{ga.group?.name}</span>
+                    <div className={`w-3 h-3 rounded border shrink-0 ${ga.group?.color || "bg-stone-50 border-[var(--border)]"}`} />
+                    <span className="flex-1 text-[11px] [color:var(--text-2)] truncate">{ga.group?.name}</span>
                     <button
                       onClick={() => handleRemoveGroup(ga.groupId)}
                       disabled={isPending}
-                      className="p-0.5 rounded hover:bg-red-50 text-stone-300 hover:text-red-500 transition-smooth"
+                      className="p-0.5 rounded hover:bg-red-50 [color:var(--text-3)] hover:text-red-500 transition-smooth"
                     >
                       <X className="w-3 h-3" />
                     </button>
