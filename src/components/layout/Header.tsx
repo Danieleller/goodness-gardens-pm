@@ -5,7 +5,7 @@ import { SearchBar } from "./SearchBar";
 import { NotificationBell } from "./NotificationBell";
 import { QuickAddModal } from "@/components/tasks/QuickAddModal";
 import { Plus, LogOut, Settings } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import type { User, Notification, Task, Category, UserGroup, UserGroupMember } from "@/db/schema";
 
@@ -119,7 +119,11 @@ export function Header({
                 {user.name || user.email}
               </span>
               <button
-                onClick={() => signOut()}
+                onClick={async () => {
+                  const supabase = createClient();
+                  await supabase.auth.signOut();
+                  window.location.href = "/login";
+                }}
                 className="p-1.5 rounded-lg transition-smooth"
                 style={{ color: "var(--text-3)" }}
                 title="Sign out"
