@@ -7,7 +7,7 @@ import { QuickAddModal } from "@/components/tasks/QuickAddModal";
 import { Plus, LogOut, Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
-import type { User, Notification, Task, Category, UserGroup, UserGroupMember } from "@/db/schema";
+import type { User, Notification, Task, Category, UserGroup, UserGroupMember, Project } from "@/db/schema";
 
 type NotifWithTask = Notification & { task: Task | null };
 type GroupWithMembers = UserGroup & { members: (UserGroupMember & { user: User })[] };
@@ -18,12 +18,14 @@ export function Header({
   notifications,
   categories,
   groups = [],
+  projects = [],
 }: {
   user: { name?: string | null; email?: string | null; image?: string | null; role?: string };
   users: User[];
   notifications: NotifWithTask[];
   categories: Category[];
   groups?: GroupWithMembers[];
+  projects?: Project[];
 }) {
   const [showAdd, setShowAdd] = useState(false);
 
@@ -141,6 +143,7 @@ export function Header({
         users={users}
         categories={categories}
         groups={groups}
+        projects={projects}
       />
     </>
   );

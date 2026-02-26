@@ -17,10 +17,11 @@ import {
 import { KanbanColumn } from "./KanbanColumn";
 import { TaskCard } from "./TaskCard";
 import { RocksView } from "../rocks/RocksView";
+import { ProjectsView } from "../projects/ProjectsView";
 import { CalendarView } from "../calendar/CalendarView";
 import { updateTask } from "@/actions/tasks";
-import { Users, LayoutGrid, Target, CalendarDays, AlertTriangle, Clock, CheckCircle2 } from "lucide-react";
-import type { Task, User, Category, Rock } from "@/db/schema";
+import { Users, LayoutGrid, Target, CalendarDays, AlertTriangle, Clock, CheckCircle2, FolderOpen } from "lucide-react";
+import type { Task, User, Category, Rock, Project, ProjectMember } from "@/db/schema";
 
 type TaskWithRelations = Task & {
   assignedTo: User | null;
@@ -28,19 +29,22 @@ type TaskWithRelations = Task & {
 };
 
 type RockWithOwner = Rock & { owner: User };
+type ProjectWithMembers = Project & { owner: User | null; members: (ProjectMember & { user: User })[] };
 
-type ViewMode = "person" | "category" | "rocks" | "calendar";
+type ViewMode = "person" | "category" | "projects" | "calendar";
 
 export function KanbanBoard({
   initialTasks,
   users,
   categories,
   rocks = [],
+  projects = [],
 }: {
   initialTasks: TaskWithRelations[];
   users: User[];
   categories: Category[];
   rocks?: RockWithOwner[];
+  projects?: ProjectWithMembers[];
 }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [view, setView] = useState<ViewMode>("person");
@@ -259,15 +263,15 @@ export function KanbanBoard({
             By Category
           </button>
           <button
-            onClick={() => setView("rocks")}
+            onClick={() => setView("projects")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-smooth ${
-              view === "rocks"
+              view === "projects"
                 ? "shadow-sm"
                 : ""
             }`}
           >
-            <Target className="w-4 h-4" />
-            Ultimate Rocks
+            <FolderOpen className="w-4 h-4" />
+            Projects
           </button>
           <button
             onClick={() => setView("calendar")}
@@ -298,8 +302,8 @@ export function KanbanBoard({
       </div>
 
       {/* Board, Rocks, or Calendar View */}
-      {view === "rocks" ? (
-        <RocksView rocks={rocks} users={users} />
+      {view === "projects" ? (
+        <ProjectsView projects={projects} users={users} />
       ) : view === "calendar" ? (
         <CalendarView tasks={tasks} />
       ) : (

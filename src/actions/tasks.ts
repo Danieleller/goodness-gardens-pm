@@ -1,13 +1,23 @@
 "use server";
 
 import { db } from "@/db";
-import { tasks, auditLogs, notifications, users, taskAssignees, taskGroupAssignments, subtasks } from "@/db/schema";
+import {
+  tasks,
+  auditLogs,
+  notifications,
+  users,
+  taskAssignees,
+  taskGroupAssignments,
+  taskMembers,
+  subtasks,
+} from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { visibleTasksWhere, canAccessTask } from "@/lib/visibility";
 import { eq, like, or, desc, and, SQL } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { sendAssignmentEmail } from "@/lib/email";
 
-// ââ Create Task ââââââââââââââââââââââââââââââââââââââââ
+// -- Create Task --------------------------------------------------
 export async function createTask(data: {
   title: string;
   description?: string;
@@ -18,6 +28,8 @@ export async function createTask(data: {
   status?: "Backlog" | "Doing" | "Blocked" | "Done";
   additionalAssigneeIds?: string[];
   assignedGroupIds?: string[];
+  visibility?: "private" | "project" | "public";
+  projectId?: string;
 }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -37,6 +49,8 @@ export async function createTask(data: {
     category: (data.category || "Operations") as any,
     status: data.status || "Backlog",
     createdByUserId: session.user.id,
+    visibility: data.visibility || "private",
+    projectId: data.projectId || null,
     createdAt: now,
     updatedAt: now,
   });
@@ -92,7 +106,7 @@ export async function createTask(data: {
   return { id };
 }
 
-// ââ Update Task ââââââââââââââââââââââââââââââââââââââââ
+// -- Update Task --------------------------------------------------
 export async function updateTask(
   taskId: string,
   data: Partial<{
@@ -103,10 +117,16 @@ export async function updateTask(
     assignedToUserId: string | null;
     category: string;
     status: string;
+    visibility: "private" | "project" | "public";
+    projectId: string | null;
   }>
 ) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
+
+  // Access check
+  const allowed = await canAccessTask(session.user.id, session.user.role, taskId);
+  if (!allowed) throw new Error("Access denied");
 
   const existing = await db.query.tasks.findFirst({
     where: eq(tasks.id, taskId),
@@ -137,6 +157,9 @@ export async function updateTask(
   }
   if (data.dueDate !== undefined && data.dueDate !== existing.dueDate) {
     changes.push({ action: "due_date_changed", oldValue: existing.dueDate, newValue: data.dueDate });
+  }
+  if (data.visibility !== undefined && data.visibility !== existing.visibility) {
+    changes.push({ action: "visibility_changed", oldValue: existing.visibility, newValue: data.visibility });
   }
 
   await db
@@ -171,24 +194,38 @@ export async function updateTask(
   revalidatePath("/");
 }
 
-// ââ Delete Task ââââââââââââââââââââââââââââââââââââââââ
+// -- Delete Task --------------------------------------------------
 export async function deleteTask(taskId: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
+
+  // Only creator or admin can delete
+  const existing = await db.query.tasks.findFirst({
+    where: eq(tasks.id, taskId),
+    columns: { createdByUserId: true },
+  });
+  if (!existing) throw new Error("Task not found");
+  if (session.user.role !== "admin" && existing.createdByUserId !== session.user.id) {
+    throw new Error("Only the task creator or an admin can delete this task");
+  }
+
   await db.delete(tasks).where(eq(tasks.id, taskId));
   revalidatePath("/");
 }
 
-// ââ Search Tasks âââââââââââââââââââââââââââââââââââââââ
+// -- Search Tasks -------------------------------------------------
 export async function searchTasks(query: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
+  const visCondition = visibleTasksWhere(session.user.id, session.user.role);
+  const searchCondition = or(
+    like(tasks.title, `%${query}%`),
+    like(tasks.description, `%${query}%`)
+  );
+
   const results = await db.query.tasks.findMany({
-    where: or(
-      like(tasks.title, `%${query}%`),
-      like(tasks.description, `%${query}%`)
-    ),
+    where: visCondition ? and(searchCondition, visCondition) : searchCondition,
     with: { assignedTo: true, createdBy: true },
     orderBy: desc(tasks.updatedAt),
     limit: 20,
@@ -197,16 +234,21 @@ export async function searchTasks(query: string) {
   return results;
 }
 
-// ââ Get Task with Audit Trail ââââââââââââââââââââââââââ
+// -- Get Task with Audit Trail ------------------------------------
 export async function getTaskWithAudit(taskId: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
+
+  // Access check
+  const allowed = await canAccessTask(session.user.id, session.user.role, taskId);
+  if (!allowed) throw new Error("Access denied");
 
   const task = await db.query.tasks.findFirst({
     where: eq(tasks.id, taskId),
     with: {
       assignedTo: true,
       createdBy: true,
+      project: true,
       auditLogs: {
         orderBy: desc(auditLogs.createdAt),
         with: { user: true },
@@ -217,13 +259,16 @@ export async function getTaskWithAudit(taskId: string) {
       groupAssignments: {
         with: { group: true },
       },
+      members: {
+        with: { user: true },
+      },
     },
   });
 
   return task;
 }
 
-// ââ Get All Tasks ââââââââââââââââââââââââââââââââââââââ
+// -- Get All Tasks ------------------------------------------------
 export async function getTasks(filters?: {
   assignedToUserId?: string;
   category?: string;
@@ -232,7 +277,12 @@ export async function getTasks(filters?: {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
-  const conditions: SQL[] = [];
+  const conditions: (SQL | undefined)[] = [];
+
+  // Visibility filter
+  const visCondition = visibleTasksWhere(session.user.id, session.user.role);
+  if (visCondition) conditions.push(visCondition);
+
   if (filters?.assignedToUserId) {
     conditions.push(eq(tasks.assignedToUserId, filters.assignedToUserId));
   }
@@ -243,13 +293,16 @@ export async function getTasks(filters?: {
     conditions.push(eq(tasks.status, filters.status as any));
   }
 
+  const validConditions = conditions.filter(Boolean) as SQL[];
+
   const result = await db.query.tasks.findMany({
-    where: conditions.length > 0 ? and(...conditions) : undefined,
+    where: validConditions.length > 0 ? and(...validConditions) : undefined,
     with: {
       assignedTo: true,
       createdBy: true,
       additionalAssignees: { with: { user: true } },
       groupAssignments: { with: { group: true } },
+      members: { with: { user: true } },
     },
     orderBy: desc(tasks.updatedAt),
   });
@@ -257,17 +310,20 @@ export async function getTasks(filters?: {
   return result;
 }
 
-// ââ Get Users ââââââââââââââââââââââââââââââââââââââââââ
+// -- Get Users ----------------------------------------------------
 export async function getUsers() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
   return db.query.users.findMany();
 }
 
-// ââ Multi-Assign Functions âââââââââââââââââââââââââââââ
+// -- Multi-Assign Functions ---------------------------------------
 export async function assignTaskToUsers(taskId: string, userIds: string[]) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const allowed = await canAccessTask(session.user.id, session.user.role, taskId);
+  if (!allowed) throw new Error("Access denied");
 
   const task = await db.query.tasks.findFirst({ where: eq(tasks.id, taskId) });
   if (!task) throw new Error("Task not found");
@@ -310,6 +366,9 @@ export async function unassignTaskFromUser(taskId: string, userId: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
+  const allowed = await canAccessTask(session.user.id, session.user.role, taskId);
+  if (!allowed) throw new Error("Access denied");
+
   await db
     .delete(taskAssignees)
     .where(and(eq(taskAssignees.taskId, taskId), eq(taskAssignees.userId, userId)));
@@ -329,6 +388,9 @@ export async function unassignTaskFromUser(taskId: string, userId: string) {
 export async function assignTaskToGroup(taskId: string, groupId: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const allowed = await canAccessTask(session.user.id, session.user.role, taskId);
+  if (!allowed) throw new Error("Access denied");
 
   const existing = await db.query.taskGroupAssignments.findFirst({
     where: and(
@@ -353,6 +415,9 @@ export async function unassignTaskFromGroup(taskId: string, groupId: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
+  const allowed = await canAccessTask(session.user.id, session.user.role, taskId);
+  if (!allowed) throw new Error("Access denied");
+
   await db
     .delete(taskGroupAssignments)
     .where(
@@ -366,7 +431,47 @@ export async function unassignTaskFromGroup(taskId: string, groupId: string) {
   revalidatePath(`/tasks/${taskId}`);
 }
 
-// ââ Notification helpers âââââââââââââââââââââââââââââââ
+// -- Task Members (Collaborators) ---------------------------------
+export async function addTaskMember(taskId: string, userId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const allowed = await canAccessTask(session.user.id, session.user.role, taskId);
+  if (!allowed) throw new Error("Access denied");
+
+  // Check if already a member
+  const existing = await db.query.taskMembers.findFirst({
+    where: and(eq(taskMembers.taskId, taskId), eq(taskMembers.userId, userId)),
+  });
+  if (existing) return;
+
+  await db.insert(taskMembers).values({
+    taskId,
+    userId,
+    addedByUserId: session.user.id,
+    addedAt: new Date(),
+  });
+
+  revalidatePath("/");
+  revalidatePath(`/tasks/${taskId}`);
+}
+
+export async function removeTaskMember(taskId: string, userId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const allowed = await canAccessTask(session.user.id, session.user.role, taskId);
+  if (!allowed) throw new Error("Access denied");
+
+  await db
+    .delete(taskMembers)
+    .where(and(eq(taskMembers.taskId, taskId), eq(taskMembers.userId, userId)));
+
+  revalidatePath("/");
+  revalidatePath(`/tasks/${taskId}`);
+}
+
+// -- Notification helpers -----------------------------------------
 async function createAssignmentNotification(
   taskId: string,
   taskTitle: string,
@@ -410,7 +515,7 @@ async function createAssignmentNotification(
   }
 }
 
-// ââ Notifications ââââââââââââââââââââââââââââââââââââââ
+// -- Notifications ------------------------------------------------
 export async function getNotifications() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -452,10 +557,14 @@ export async function markAllNotificationsRead() {
   revalidatePath("/");
 }
 
-// ââ Sub-tasks âââââââââââââââââââââââââââââââââââââââââ
+// -- Sub-tasks ----------------------------------------------------
 export async function createSubtask(taskId: string, title: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
+
+  // Access check on parent task
+  const allowed = await canAccessTask(session.user.id, session.user.role, taskId);
+  if (!allowed) throw new Error("Access denied");
 
   const existing = await db.query.subtasks.findMany({
     where: eq(subtasks.taskId, taskId),
@@ -486,6 +595,10 @@ export async function toggleSubtask(subtaskId: string, completed: boolean) {
   });
   if (!subtask) throw new Error("Subtask not found");
 
+  // Access check on parent task
+  const allowed = await canAccessTask(session.user.id, session.user.role, subtask.taskId);
+  if (!allowed) throw new Error("Access denied");
+
   await db
     .update(subtasks)
     .set({ completed })
@@ -503,6 +616,10 @@ export async function deleteSubtask(subtaskId: string) {
     where: eq(subtasks.id, subtaskId),
   });
   if (!subtask) throw new Error("Subtask not found");
+
+  // Access check on parent task
+  const allowed = await canAccessTask(session.user.id, session.user.role, subtask.taskId);
+  if (!allowed) throw new Error("Access denied");
 
   await db.delete(subtasks).where(eq(subtasks.id, subtaskId));
 

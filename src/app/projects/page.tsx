@@ -1,18 +1,34 @@
-export default function ProjectsPage() {
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { getProjects } from "@/actions/projects";
+import { getUsers } from "@/actions/tasks";
+import { ProjectsView } from "@/components/projects/ProjectsView";
+import { HomeShell } from "@/components/layout/HomeShell";
+import { getUserPrefs } from "@/actions/userPrefs";
+
+export const dynamic = "force-dynamic";
+
+export default async function ProjectsPage() {
+  const session = await auth();
+  if (!session?.user) redirect("/login");
+
+  const prefs = await getUserPrefs();
+  const [projects, users] = await Promise.all([
+    getProjects(),
+    getUsers(),
+  ]);
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-      <h1
-        className="text-2xl font-semibold"
-        style={{ color: "var(--text)" }}
-      >
-        Projects
-      </h1>
-      <p
-        className="text-sm"
-        style={{ color: "var(--text-3)" }}
-      >
-        Coming soon — project views are on the roadmap.
-      </p>
-    </div>
+    <HomeShell
+      currentPath="/projects"
+      taskCount={0}
+      userName={session.user.name ?? undefined}
+      userImage={session.user.image}
+      initialCollapsed={prefs.sidebarCollapsed}
+    >
+      <div className="flex-1 overflow-hidden">
+        <ProjectsView projects={projects as any} users={users} />
+      </div>
+    </HomeShell>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateTask, deleteTask, assignTaskToUsers, unassignTaskFromUser, assignTaskToGroup, unassignTaskFromGroup, createSubtask, toggleSubtask, deleteSubtask } from "@/actions/tasks";
+import { updateTask, deleteTask, assignTaskToUsers, unassignTaskFromUser, assignTaskToGroup, unassignTaskFromGroup, createSubtask, toggleSubtask, deleteSubtask, addTaskMember, removeTaskMember } from "@/actions/tasks";
 import { Badge } from "@/components/ui/badge";
 import {
   STATUSES,
@@ -24,17 +24,22 @@ import {
   ListChecks,
   Check,
   ChevronDown,
+  Eye,
+  EyeOff,
+  Share2,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { Task, User, AuditLog, Category, TaskAssignee, TaskGroupAssignment, UserGroup, Subtask } from "@/db/schema";
+import type { Task, User, AuditLog, Category, TaskAssignee, TaskGroupAssignment, UserGroup, Subtask, TaskMember, Project } from "@/db/schema";
 
 type TaskFull = Task & {
   assignedTo: User | null;
   createdBy: User;
+  project?: Project | null;
   auditLogs: (AuditLog & { user: User })[];
   additionalAssignees?: (TaskAssignee & { user: User })[];
   groupAssignments?: (TaskGroupAssignment & { group: UserGroup })[];
+  members?: (TaskMember & { user: User })[];
   subtasks?: Subtask[];
 };
 
@@ -47,6 +52,7 @@ const ACTION_LABELS: Record<string, string> = {
   due_date_changed: "changed deadline",
   title_changed: "changed title",
   description_changed: "changed description",
+  visibility_changed: "changed visibility",
 };
 
 export function TaskDetailClient({
@@ -54,11 +60,13 @@ export function TaskDetailClient({
   users,
   categories,
   groups = [],
+  projects = [],
 }: {
   task: TaskFull;
   users: User[];
   categories: Category[];
   groups?: (UserGroup & { members: any[] })[];
+  projects?: Project[];
 }) {
   const router = useRouter();
   const [task, setTask] = useState(initialTask);
@@ -68,6 +76,7 @@ export function TaskDetailClient({
   const [description, setDescription] = useState(task.description || "");
   const [showAddAssignee, setShowAddAssignee] = useState(false);
   const [showAddGroup, setShowAddGroup] = useState(false);
+  const [showAddMember, setShowAddMember] = useState(false);
   const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
   const [showAddSubtask, setShowAddSubtask] = useState(false);
   const [showActivity, setShowActivity] = useState(false);
@@ -117,6 +126,21 @@ export function TaskDetailClient({
     });
   };
 
+  const handleAddMember = (userId: string) => {
+    startTransition(async () => {
+      await addTaskMember(task.id, userId);
+      router.refresh();
+    });
+    setShowAddMember(false);
+  };
+
+  const handleRemoveMember = (userId: string) => {
+    startTransition(async () => {
+      await removeTaskMember(task.id, userId);
+      router.refresh();
+    });
+  };
+
   const handleCreateSubtask = () => {
     if (!newSubtaskTitle.trim()) return;
     startTransition(async () => {
@@ -148,6 +172,11 @@ export function TaskDetailClient({
   ].filter(Boolean));
   const availableUsers = users.filter((u) => !assignedUserIds.has(u.id));
 
+  const memberUserIds = new Set(task.members?.map((m) => m.userId) || []);
+  const availableMembers = users.filter(
+    (u) => !assignedUserIds.has(u.id) && !memberUserIds.has(u.id)
+  );
+
   const assignedGroupIds = new Set(task.groupAssignments?.map((g) => g.groupId) || []);
   const availableGroups = groups.filter((g) => !assignedGroupIds.has(g.id));
 
@@ -176,7 +205,7 @@ export function TaskDetailClient({
       {/* Two-column layout */}
       <div className="max-w-5xl mx-auto p-4 md:p-6">
         <div className="grid grid-cols-1 md:grid-cols-[1fr_300px] gap-6">
-          {/* Left column â Main content */}
+          {/* Left column - Main content */}
           <div className="space-y-5">
             {/* Title + description */}
             <div className="bg-[var(--surface-1)] rounded-xl border border-[var(--border)] p-5">
@@ -334,7 +363,7 @@ export function TaskDetailClient({
               </div>
             </div>
 
-            {/* Activity / Audit Trail â collapsible */}
+            {/* Activity / Audit Trail - collapsible */}
             <div className="bg-[var(--surface-1)] rounded-xl border border-[var(--border)] overflow-hidden">
               <button
                 onClick={() => setShowActivity(!showActivity)}
@@ -398,7 +427,7 @@ export function TaskDetailClient({
             </div>
           </div>
 
-          {/* Right column â Properties sidebar */}
+          {/* Right column - Properties sidebar */}
           <div className="space-y-4">
             {/* Status & Priority */}
             <div className="bg-[var(--surface-1)] rounded-xl border border-[var(--border)] p-4 space-y-3">
@@ -486,6 +515,113 @@ export function TaskDetailClient({
                   {formatDate(task.createdAt?.toString())} by{" "}
                   {task.createdBy?.name || task.createdBy?.email}
                 </p>
+              </div>
+            </div>
+
+            {/* Visibility & Sharing */}
+            <div className="bg-[var(--surface-1)] rounded-xl border border-[var(--border)] p-4 space-y-3">
+              <div>
+                <label className="flex items-center gap-1.5 text-[11px] font-medium [color:var(--text-3)] uppercase tracking-wide mb-1.5">
+                  {task.visibility === "public" ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
+                  Visibility
+                </label>
+                <select
+                  value={task.visibility}
+                  onChange={(e) => handleUpdate("visibility", e.target.value)}
+                  className="w-full border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm [color:var(--text)] bg-[var(--surface-1)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10 transition-smooth"
+                >
+                  <option value="private">Private</option>
+                  <option value="public">Public</option>
+                  <option value="project">Project members</option>
+                </select>
+                <p className="text-[10px] [color:var(--text-3)] mt-1 px-1">
+                  {task.visibility === "private" && "Only you, assignees, and collaborators can see this task"}
+                  {task.visibility === "public" && "Everyone in the organization can see this task"}
+                  {task.visibility === "project" && "Project members can see this task"}
+                </p>
+              </div>
+
+              {task.visibility === "project" && (
+                <div>
+                  <label className="flex items-center gap-1.5 text-[11px] font-medium [color:var(--text-3)] uppercase tracking-wide mb-1.5">
+                    <FolderOpen className="w-3.5 h-3.5" />
+                    Project
+                  </label>
+                  <select
+                    value={task.projectId || ""}
+                    onChange={(e) =>
+                      handleUpdate("projectId", e.target.value || null)
+                    }
+                    className="w-full border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm [color:var(--text)] bg-[var(--surface-1)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10 transition-smooth"
+                  >
+                    <option value="">No project</option>
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Shared with (Task Members / Collaborators) */}
+            <div className="bg-[var(--surface-1)] rounded-xl border border-[var(--border)] p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h2 className="flex items-center gap-2 text-[11px] font-semibold [color:var(--text-3)] uppercase tracking-wide">
+                  <Share2 className="w-3.5 h-3.5" />
+                  Shared With
+                </h2>
+                {availableMembers.length > 0 && (
+                  <button
+                    onClick={() => setShowAddMember(!showAddMember)}
+                    className="[color:var(--text-3)] hover:[color:var(--accent)] transition-smooth"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {showAddMember && (
+                <div className="mb-2">
+                  <select
+                    value=""
+                    onChange={(e) => e.target.value && handleAddMember(e.target.value)}
+                    className="w-full border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm [color:var(--text)] bg-[var(--surface-1)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10"
+                  >
+                    <option value="">Select a person...</option>
+                    {availableMembers.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.name || u.email}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                {(!task.members || task.members.length === 0) && (
+                  <p className="text-[11px] [color:var(--text-3)]">No collaborators added</p>
+                )}
+                {task.members?.map((m) => (
+                  <div key={m.id} className="flex items-center gap-2 text-sm">
+                    {m.user?.image ? (
+                      <img src={m.user.image} alt="" className="w-5 h-5 rounded-full ring-1 ring-[var(--border)]" />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full bg-[var(--surface-2)] flex items-center justify-center text-[10px] font-medium [color:var(--text-2)]">
+                        {(m.user?.name || m.user?.email || "?")[0].toUpperCase()}
+                      </div>
+                    )}
+                    <span className="flex-1 text-[11px] [color:var(--text-2)] truncate">{m.user?.name || m.user?.email}</span>
+                    <button
+                      onClick={() => handleRemoveMember(m.userId)}
+                      disabled={isPending}
+                      className="p-0.5 rounded hover:bg-red-50 [color:var(--text-3)] hover:text-red-500 transition-smooth"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
 

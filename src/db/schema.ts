@@ -1,7 +1,7 @@
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 
-// ââ Users ââââââââââââââââââââââââââââââââââââââââââââââ
+// -- Users ------------------------------------------------
 export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
   name: text("name"),
@@ -41,7 +41,7 @@ export const sessions = sqliteTable("sessions", {
   expires: integer("expires", { mode: "timestamp" }).notNull(),
 });
 
-// ââ Tasks ââââââââââââââââââââââââââââââââââââââââââââââ
+// -- Tasks ------------------------------------------------
 export const tasks = sqliteTable("tasks", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   title: text("title").notNull(),
@@ -64,6 +64,12 @@ export const tasks = sqliteTable("tasks", {
   createdByUserId: text("created_by_user_id")
     .notNull()
     .references(() => users.id),
+  visibility: text("visibility", {
+    enum: ["private", "project", "public"],
+  })
+    .notNull()
+    .default("public"),
+  projectId: text("project_id"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -72,7 +78,24 @@ export const tasks = sqliteTable("tasks", {
     .$defaultFn(() => new Date()),
 });
 
-// ââ Audit Trail ââââââââââââââââââââââââââââââââââââââââ
+// -- Task Members (collaborators) -------------------------
+export const taskMembers = sqliteTable("task_members", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  taskId: text("task_id")
+    .notNull()
+    .references(() => tasks.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  addedAt: integer("added_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  addedByUserId: text("added_by_user_id")
+    .notNull()
+    .references(() => users.id),
+});
+
+// -- Audit Trail ------------------------------------------
 export const auditLogs = sqliteTable("audit_logs", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   taskId: text("task_id")
@@ -91,6 +114,7 @@ export const auditLogs = sqliteTable("audit_logs", {
       "due_date_changed",
       "title_changed",
       "description_changed",
+      "visibility_changed",
     ],
   }).notNull(),
   oldValue: text("old_value"),
@@ -100,7 +124,7 @@ export const auditLogs = sqliteTable("audit_logs", {
     .$defaultFn(() => new Date()),
 });
 
-// ââ Notifications ââââââââââââââââââââââââââââââââââââââ
+// -- Notifications ----------------------------------------
 export const notifications = sqliteTable("notifications", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   userId: text("user_id")
@@ -117,13 +141,15 @@ export const notifications = sqliteTable("notifications", {
     .$defaultFn(() => new Date()),
 });
 
-// ââ Relations ââââââââââââââââââââââââââââââââââââââââââ
+// -- Relations --------------------------------------------
 export const usersRelations = relations(users, ({ one, many }) => ({
   assignedTasks: many(tasks, { relationName: "assignedTo" }),
   createdTasks: many(tasks, { relationName: "createdBy" }),
   notifications: many(notifications),
   groupMemberships: many(userGroupMembers),
   additionalTaskAssignments: many(taskAssignees, { relationName: "taskAssigneeUser" }),
+  taskMemberships: many(taskMembers, { relationName: "taskMemberUser" }),
+  projectMemberships: many(projectMembers, { relationName: "projectMemberUser" }),
   prefs: one(userPrefs),
 }));
 
@@ -138,9 +164,14 @@ export const tasksRelations = relations(tasks, ({ one, many }) => ({
     references: [users.id],
     relationName: "createdBy",
   }),
+  project: one(projects, {
+    fields: [tasks.projectId],
+    references: [projects.id],
+  }),
   auditLogs: many(auditLogs),
   additionalAssignees: many(taskAssignees),
   groupAssignments: many(taskGroupAssignments),
+  members: many(taskMembers),
   subtasks: many(subtasks),
 }));
 
@@ -160,7 +191,25 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
   }),
 }));
 
-// ââ Categories âââââââââââââââââââââââââââââââââââââââââ
+// -- Task Members Relations -------------------------------
+export const taskMembersRelations = relations(taskMembers, ({ one }) => ({
+  task: one(tasks, {
+    fields: [taskMembers.taskId],
+    references: [tasks.id],
+  }),
+  user: one(users, {
+    fields: [taskMembers.userId],
+    references: [users.id],
+    relationName: "taskMemberUser",
+  }),
+  addedBy: one(users, {
+    fields: [taskMembers.addedByUserId],
+    references: [users.id],
+    relationName: "taskMemberAddedBy",
+  }),
+}));
+
+// -- Categories -------------------------------------------
 export const categories = sqliteTable("categories", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull().unique(),
@@ -174,7 +223,7 @@ export const categories = sqliteTable("categories", {
 
 export const categoriesRelations = relations(categories, ({}) => ({}));
 
-// ââ Rocks (Quarterly Goals) âââââââââââââââââââââââââââââ
+// -- Rocks (Quarterly Goals) - legacy, kept for compat ----
 export const rocks = sqliteTable("rocks", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   title: text("title").notNull(),
@@ -204,7 +253,74 @@ export const rocksRelations = relations(rocks, ({ one }) => ({
   }),
 }));
 
-// ââ User Groups âââââââââââââââââââââââââââââââââââââââ
+// -- Projects ---------------------------------------------
+export const projects = sqliteTable("projects", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text("title").notNull(),
+  description: text("description"),
+  ownerUserId: text("owner_user_id")
+    .references(() => users.id, { onDelete: "set null" }),
+  quarter: text("quarter"),
+  rockNumber: integer("rock_number").notNull().default(0),
+  status: text("status", {
+    enum: ["on_track", "off_track", "complete", "at_risk", "not_started"],
+  })
+    .notNull()
+    .default("not_started"),
+  progress: integer("progress").notNull().default(0),
+  notes: text("notes"),
+  type: text("type", { enum: ["rock", "project"] })
+    .notNull()
+    .default("project"),
+  visibility: text("visibility", { enum: ["private", "members", "public"] })
+    .notNull()
+    .default("members"),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export const projectMembers = sqliteTable("project_members", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => projects.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  role: text("role", { enum: ["viewer", "member", "owner"] })
+    .notNull()
+    .default("member"),
+  addedAt: integer("added_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export const projectsRelations = relations(projects, ({ one, many }) => ({
+  owner: one(users, {
+    fields: [projects.ownerUserId],
+    references: [users.id],
+  }),
+  members: many(projectMembers),
+  tasks: many(tasks),
+}));
+
+export const projectMembersRelations = relations(projectMembers, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectMembers.projectId],
+    references: [projects.id],
+  }),
+  user: one(users, {
+    fields: [projectMembers.userId],
+    references: [users.id],
+    relationName: "projectMemberUser",
+  }),
+}));
+
+// -- User Groups ------------------------------------------
 export const userGroups = sqliteTable("user_groups", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull().unique(),
@@ -266,7 +382,7 @@ export const taskGroupAssignments = sqliteTable("task_group_assignments", {
     .$defaultFn(() => new Date()),
 });
 
-// ââ Sub-tasks ââââââââââââââââââââââââââââââââââââââââ
+// -- Sub-tasks --------------------------------------------
 export const subtasks = sqliteTable("subtasks", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   taskId: text("task_id")
@@ -287,7 +403,7 @@ export const subtasksRelations = relations(subtasks, ({ one }) => ({
   }),
 }));
 
-// ââ Group Relations âââââââââââââââââââââââââââââââââââ
+// -- Group Relations --------------------------------------
 export const userGroupsRelations = relations(userGroups, ({ one, many }) => ({
   createdBy: one(users, {
     fields: [userGroups.createdByUserId],
@@ -340,7 +456,7 @@ export const taskGroupAssignmentsRelations = relations(taskGroupAssignments, ({ 
   }),
 }));
 
-// ———— User Preferences ————————————————————————————
+// -- User Preferences -------------------------------------
 export const userPrefs = sqliteTable("user_prefs", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   userId: text("user_id")
@@ -368,17 +484,19 @@ export const userPrefsRelations = relations(userPrefs, ({ one }) => ({
   }),
 }));
 
-// ââ Type exports âââââââââââââââââââââââââââââââââââââââ
+// -- Type exports -----------------------------------------
 export type User = typeof users.$inferSelect;
 export type Task = typeof tasks.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type Rock = typeof rocks.$inferSelect;
+export type Project = typeof projects.$inferSelect;
+export type ProjectMember = typeof projectMembers.$inferSelect;
+export type TaskMember = typeof taskMembers.$inferSelect;
 export type UserGroup = typeof userGroups.$inferSelect;
 export type UserGroupMember = typeof userGroupMembers.$inferSelect;
 export type TaskAssignee = typeof taskAssignees.$inferSelect;
 export type TaskGroupAssignment = typeof taskGroupAssignments.$inferSelect;
 export type Subtask = typeof subtasks.$inferSelect;
 export type UserPrefs = typeof userPrefs.$inferSelect;
-
