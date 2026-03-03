@@ -80,12 +80,18 @@ export function TaskCard({
             task.status === "Done"
               ? "bg-[var(--accent)] border-[var(--accent)] text-white"
               : isDarkCard
-                ? "border-white/20 hover:border-white/50"
-                : "border-[var(--border)] hover:border-[var(--accent)]"
+                ? "border-white/20 hover:border-white/50 hover:bg-white/10"
+                : "border-[var(--border)] hover:border-emerald-500 hover:bg-emerald-50"
           } ${isPending ? "opacity-50" : ""}`}
-          title={task.status === "Done" ? "Mark not done" : "Mark done"}
+          title={task.status === "Done" ? "Reopen task" : "Mark as done"}
         >
-          {task.status === "Done" && <Check className="w-3 h-3" />}
+          <Check className={`w-3 h-3 ${
+            task.status === "Done"
+              ? ""
+              : isDarkCard
+                ? "text-white/0 group-hover:text-white/30"
+                : "text-transparent group-hover:text-emerald-300"
+          }`} />
         </button>
         <div className="flex-1 min-w-0">
           <Link
