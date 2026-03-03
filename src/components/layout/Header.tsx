@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { SearchBar } from "./SearchBar";
 import { NotificationBell } from "./NotificationBell";
 import { QuickAddModal } from "@/components/tasks/QuickAddModal";
 import { Plus, LogOut, Settings } from "lucide-react";
+
+const LOGO_URL = "https://s46ugccfpalsuqkp.public.blob.vercel-storage.com/logos/gdness-grdns-logo-default.png";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import type { User, Notification, Task, Category, UserGroup, UserGroupMember, Project } from "@/db/schema";
@@ -41,26 +44,13 @@ export function Header({
         <div className="flex items-center gap-4 px-5 py-3">
           {/* Logo */}
           <div className="flex items-center gap-2.5 shrink-0">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ background: "var(--accent)" }}
+            <Image src={LOGO_URL} alt="Goodness Gardens" width={140} height={36} className="h-8 w-auto object-contain" />
+            <span
+              className="hidden sm:block text-[11px]"
+              style={{ color: "var(--text-3)" }}
             >
-              <span className="text-white font-bold text-xs tracking-tight">GG</span>
-            </div>
-            <div className="hidden sm:block">
-              <p
-                className="text-sm font-semibold leading-none"
-                style={{ color: "var(--text)" }}
-              >
-                Goodness Gardens
-              </p>
-              <p
-                className="text-[11px] mt-0.5"
-                style={{ color: "var(--text-3)" }}
-              >
-                Task Manager
-              </p>
-            </div>
+              Task Manager
+            </span>
           </div>
 
           {/* Search */}

@@ -7,6 +7,10 @@ import { getUserPrefs } from "@/actions/userPrefs";
 export const metadata: Metadata = {
   title: "Goodness Gardens \u2014 Task Manager",
   description: "Lightweight task delegation for the Goodness Gardens team",
+  icons: {
+    icon: "https://s46ugccfpalsuqkp.public.blob.vercel-storage.com/logos/gdness-grdns-logo-default-01-square-icon.png",
+    apple: "https://s46ugccfpalsuqkp.public.blob.vercel-storage.com/logos/gdness-grdns-logo-default-01-square-icon.png",
+  },
 };
 
 export default async function RootLayout({

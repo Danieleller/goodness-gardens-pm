@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
+
+const LOGO_URL = "https://s46ugccfpalsuqkp.public.blob.vercel-storage.com/logos/gdness-grdns-logo-default.png";
 
 type Mode = "options" | "email" | "phone" | "phone-verify";
 
@@ -84,14 +87,12 @@ export default function LoginPage() {
       <div className="bg-[var(--surface-1)] rounded-xl shadow-sm border border-[var(--border)] p-8 w-full max-w-sm text-center">
         {/* Logo */}
         <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 bg-[var(--accent)] rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-xl">GG</span>
-          </div>
+          <Image src={LOGO_URL} alt="Goodness Gardens" width={240} height={120} className="h-16 w-auto object-contain" priority />
         </div>
         <h1 className="text-xl font-semibold [color:var(--text)] mb-1">
-          Goodness Gardens
+          Task Manager
         </h1>
-        <p className="text-sm [color:var(--text-2)] mb-6">Task Manager</p>
+        <p className="text-sm [color:var(--text-2)] mb-6">Goodness Gardens</p>
 
         {error && (
           <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">

@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Image from "next/image";
 import { CheckSquare, FolderKanban, Users, ChevronLeft, ChevronRight } from "lucide-react";
+
+const LOGO_URL = "https://s46ugccfpalsuqkp.public.blob.vercel-storage.com/logos/gdness-grdns-logo-default.png";
+const LOGO_ICON_URL = "https://s46ugccfpalsuqkp.public.blob.vercel-storage.com/logos/gdness-grdns-logo-default-01-square-icon.png";
 import { ThemeToggle } from "../theme/ThemeToggle";
 
 /* ═══════════════════════════════════════════════════
@@ -92,25 +96,10 @@ export function Sidebar({
         }}
       >
         {/* Logo mark */}
-        <div
-          className="flex items-center justify-center shrink-0 rounded-lg font-bold text-sm"
-          style={{
-            width: 32,
-            height: 32,
-            background: "var(--accent)",
-            color: "white",
-          }}
-        >
-          GG
-        </div>
-
-        {!collapsed && (
-          <span
-            className="ml-2.5 text-sm font-semibold truncate"
-            style={{ color: "var(--text)" }}
-          >
-            Goodness Gardens
-          </span>
+        {collapsed ? (
+          <Image src={LOGO_ICON_URL} alt="Goodness Gardens" width={32} height={32} className="shrink-0 rounded-lg" style={{ width: 32, height: 32 }} />
+        ) : (
+          <Image src={LOGO_URL} alt="Goodness Gardens" width={140} height={36} className="shrink-0 h-8 w-auto object-contain" />
         )}
 
         {/* Collapse toggle */}
