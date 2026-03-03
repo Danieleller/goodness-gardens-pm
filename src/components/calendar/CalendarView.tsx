@@ -5,12 +5,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { STATUS_COLORS } from "@/lib/utils";
 import Link from "next/link";
-import type { Task, User } from "@/db/schema";
-
-type TaskWithRelations = Task & {
-  assignedTo: User | null;
-  createdBy: User;
-};
+import type { TaskWithRelations } from "@/lib/types";
 
 function getDaysInMonth(year: number, month: number) {
   return new Date(year, month + 1, 0).getDate();

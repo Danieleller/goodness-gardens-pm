@@ -12,14 +12,7 @@ import {
 } from "@/lib/utils";
 import { Calendar, GripVertical } from "lucide-react";
 import Link from "next/link";
-import type { Task, User, TaskAssignee, TaskGroupAssignment, UserGroup } from "@/db/schema";
-
-type TaskWithRelations = Task & {
-  assignedTo: User | null;
-  createdBy: User;
-  additionalAssignees?: (TaskAssignee & { user: User })[];
-  groupAssignments?: (TaskGroupAssignment & { group: UserGroup })[];
-};
+import type { TaskWithRelations } from "@/lib/types";
 
 export function TaskCard({
   task,

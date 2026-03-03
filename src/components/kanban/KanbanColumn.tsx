@@ -6,12 +6,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { TaskCard } from "./TaskCard";
-import type { Task, User } from "@/db/schema";
-
-type TaskWithRelations = Task & {
-  assignedTo: User | null;
-  createdBy: User;
-};
+import type { TaskWithRelations } from "@/lib/types";
 
 export function KanbanColumn({
   id,

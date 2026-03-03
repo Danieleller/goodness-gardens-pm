@@ -19,19 +19,21 @@ import { TaskCard } from "./TaskCard";
 import { RocksView } from "../rocks/RocksView";
 import { ProjectsView } from "../projects/ProjectsView";
 import { CalendarView } from "../calendar/CalendarView";
+import { TableView } from "../table/TableView";
+import { WorkloadView } from "../workload/WorkloadView";
+import { TimelineView } from "../timeline/TimelineView";
+import { FilterPanel } from "../filters/FilterPanel";
+import { FilterChips } from "../filters/FilterChips";
 import { updateTask } from "@/actions/tasks";
-import { Users, LayoutGrid, Target, CalendarDays, AlertTriangle, Clock, CheckCircle2, FolderOpen } from "lucide-react";
-import type { Task, User, Category, Rock, Project, ProjectMember } from "@/db/schema";
+import {
+  Users, LayoutGrid, Target, CalendarDays, AlertTriangle, Clock,
+  CheckCircle2, FolderOpen, List, BarChart3, CalendarRange, Filter,
+} from "lucide-react";
+import type { User, Category, Rock, Project, ProjectMember } from "@/db/schema";
+import type { TaskWithRelations, RockWithOwner, ProjectWithMembers, FilterCriteria } from "@/lib/types";
+import { emptyFilters, hasActiveFilters, countActiveFilters } from "@/lib/types";
 
-type TaskWithRelations = Task & {
-  assignedTo: User | null;
-  createdBy: User;
-};
-
-type RockWithOwner = Rock & { owner: User };
-type ProjectWithMembers = Project & { owner: User | null; members: (ProjectMember & { user: User })[] };
-
-type ViewMode = "person" | "category" | "projects" | "calendar";
+type ViewMode = "person" | "category" | "projects" | "calendar" | "table" | "timeline" | "workload";
 
 export function KanbanBoard({
   initialTasks,
@@ -49,7 +51,8 @@ export function KanbanBoard({
   const [tasks, setTasks] = useState(initialTasks);
   const [view, setView] = useState<ViewMode>("person");
   const [activeTask, setActiveTask] = useState<TaskWithRelations | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [filters, setFilters] = useState<FilterCriteria>(emptyFilters);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
@@ -64,10 +67,30 @@ export function KanbanBoard({
   const completionRate = tasks.length > 0 ? Math.round((doneTasks / tasks.length) * 100) : 0;
 
   // Apply filters
-  const filteredTasks = tasks.filter((t) => {
-    if (statusFilter && t.status !== statusFilter) return false;
-    return true;
-  });
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((t) => {
+      if (filters.status && t.status !== filters.status) return false;
+      if (filters.priority && t.priority !== filters.priority) return false;
+      if (filters.assignee) {
+        if (filters.assignee === "__unassigned__") {
+          if (t.assignedToUserId) return false;
+        } else {
+          if (t.assignedToUserId !== filters.assignee) return false;
+        }
+      }
+      if (filters.category && t.category !== filters.category) return false;
+      if (filters.project) {
+        if (filters.project === "__none__") {
+          if (t.projectId) return false;
+        } else {
+          if (t.projectId !== filters.project) return false;
+        }
+      }
+      if (filters.dateFrom && t.dueDate && t.dueDate < filters.dateFrom) return false;
+      if (filters.dateTo && t.dueDate && t.dueDate > filters.dateTo) return false;
+      return true;
+    });
+  }, [tasks, filters]);
 
   // Build column IDs set for resolving drop targets
   const columnIds = useMemo(() => {
@@ -171,6 +194,13 @@ export function KanbanBoard({
     [view, tasks, users, columnIds, findColumnForTask]
   );
 
+  // Optimistic update handler for inline edits (Table view)
+  const handleOptimisticUpdate = useCallback((taskId: string, data: Record<string, unknown>) => {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, ...data } as TaskWithRelations : t))
+    );
+  }, []);
+
   // Build columns based on view
   const columns =
     view === "person"
@@ -200,10 +230,15 @@ export function KanbanBoard({
           isRocks: cat.name === "Rocks",
         }));
 
+  // Views that show the snapshot metrics
+  const showSnapshot = view === "person" || view === "category" || view === "table" || view === "workload";
+  // Views that show the filter system
+  const showFilters = view !== "projects";
+
   return (
     <div className="flex flex-col h-full">
       {/* Company Snapshot */}
-      {(view === "person" || view === "category") && (
+      {showSnapshot && (
         <div className="grid grid-cols-4 gap-3 px-5 pt-4 pb-2">
           <div className="snapshot-card">
             <div className="flex items-center gap-2 mb-1">
@@ -239,75 +274,97 @@ export function KanbanBoard({
       {/* Toolbar */}
       <div className="flex items-center gap-3 px-5 py-3 flex-wrap" style={{ borderBottom: "1px solid var(--border)" }}>
         {/* View toggle */}
-        <div className="flex rounded-lg p-0.5" style={{ background: "var(--surface-2)" }}>
-          <button
-            onClick={() => setView("person")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-smooth ${
-              view === "person"
-                ? "shadow-sm"
-                : ""
-            }`}
-          >
-            <Users className="w-4 h-4" />
-            By Person
-          </button>
-          <button
-            onClick={() => setView("category")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-smooth ${
-              view === "category"
-                ? "shadow-sm"
-                : ""
-            }`}
-          >
-            <LayoutGrid className="w-4 h-4" />
-            By Category
-          </button>
-          <button
-            onClick={() => setView("projects")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-smooth ${
-              view === "projects"
-                ? "shadow-sm"
-                : ""
-            }`}
-          >
-            <FolderOpen className="w-4 h-4" />
-            Projects
-          </button>
-          <button
-            onClick={() => setView("calendar")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-smooth ${
-              view === "calendar"
-                ? "shadow-sm"
-                : ""
-            }`}
-          >
-            <CalendarDays className="w-4 h-4" />
-            Calendar
-          </button>
+        <div className="flex rounded-lg p-0.5 flex-wrap" style={{ background: "var(--surface-2)" }}>
+          {([
+            { key: "person" as const, icon: Users, label: "By Person" },
+            { key: "category" as const, icon: LayoutGrid, label: "By Category" },
+            { key: "table" as const, icon: List, label: "Table" },
+            { key: "timeline" as const, icon: CalendarRange, label: "Timeline" },
+            { key: "workload" as const, icon: BarChart3, label: "Workload" },
+            { key: "projects" as const, icon: FolderOpen, label: "Projects" },
+            { key: "calendar" as const, icon: CalendarDays, label: "Calendar" },
+          ]).map(({ key, icon: Icon, label }) => (
+            <button
+              key={key}
+              onClick={() => setView(key)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-smooth ${
+                view === key ? "shadow-sm" : ""
+              }`}
+              style={{
+                background: view === key ? "var(--surface-1)" : "transparent",
+                color: view === key ? "var(--text)" : "var(--text-3)",
+              }}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </button>
+          ))}
         </div>
 
-        {(view === "person" || view === "category") && (
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-sm rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 transition-smooth" style={{ border: "1px solid var(--border)", color: "var(--text-2)", background: "var(--surface-1)", boxShadow: "0 0 0 0 transparent" }}
-          >
-            <option value="">All statuses</option>
-            <option value="Backlog">Backlog</option>
-            <option value="Doing">Doing</option>
-            <option value="Blocked">Blocked</option>
-            <option value="Done">Done</option>
-          </select>
+        {/* Filter toggle + chips */}
+        {showFilters && (
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <button
+              onClick={() => setShowFilterPanel((v) => !v)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-smooth ${
+                showFilterPanel || hasActiveFilters(filters) ? "" : ""
+              }`}
+              style={{
+                border: "1px solid var(--border)",
+                background: hasActiveFilters(filters) ? "var(--accent-soft)" : "var(--surface-1)",
+                color: hasActiveFilters(filters) ? "var(--accent)" : "var(--text-2)",
+              }}
+            >
+              <Filter className="w-4 h-4" />
+              Filter
+              {countActiveFilters(filters) > 0 && (
+                <span
+                  className="text-[10px] font-bold rounded-full px-1.5 py-0.5"
+                  style={{ background: "var(--accent)", color: "white" }}
+                >
+                  {countActiveFilters(filters)}
+                </span>
+              )}
+            </button>
+            <FilterChips
+              filters={filters}
+              onChange={setFilters}
+              onClearAll={() => setFilters(emptyFilters)}
+              users={users}
+              categories={categories}
+              projects={projects}
+            />
+          </div>
         )}
       </div>
 
-      {/* Board, Rocks, or Calendar View */}
+      {/* Filter panel (collapsible) */}
+      {showFilterPanel && showFilters && (
+        <div className="px-5 pt-3">
+          <FilterPanel
+            filters={filters}
+            onChange={setFilters}
+            users={users}
+            categories={categories}
+            projects={projects}
+            onClose={() => setShowFilterPanel(false)}
+          />
+        </div>
+      )}
+
+      {/* Views */}
       {view === "projects" ? (
         <ProjectsView projects={projects} users={users} />
       ) : view === "calendar" ? (
-        <CalendarView tasks={tasks} />
+        <CalendarView tasks={filteredTasks} />
+      ) : view === "table" ? (
+        <TableView tasks={filteredTasks} users={users} onUpdateTask={handleOptimisticUpdate} />
+      ) : view === "workload" ? (
+        <WorkloadView tasks={filteredTasks} users={users} />
+      ) : view === "timeline" ? (
+        <TimelineView tasks={filteredTasks} users={users} categories={categories} />
       ) : (
-        <div className="flex-1 overflow-x-auto p-4">
+        <div className="flex-1 overflow-x-auto p-4 view-enter">
           <DndContext
             sensors={sensors}
             collisionDetection={customCollisionDetection}
