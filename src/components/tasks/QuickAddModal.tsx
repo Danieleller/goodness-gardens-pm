@@ -28,12 +28,14 @@ export function QuickAddModal({
 }) {
   const [isPending, startTransition] = useTransition();
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [assignee, setAssignee] = useState("");
   const [additionalAssignees, setAdditionalAssignees] = useState<string[]>([]);
   const [assignedGroups, setAssignedGroups] = useState<string[]>([]);
   const [category, setCategory] = useState<string>(categories[0]?.name || "Operations");
   const [status, setStatus] = useState<string>("Backlog");
-  const [priority, setPriority] = useState<string>("medium");
+  const [priority, setPriority] = useState<string>("");
+  const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [visibility, setVisibility] = useState<"private" | "project" | "public">("private");
   const [projectId, setProjectId] = useState<string>("");
@@ -61,10 +63,12 @@ export function QuickAddModal({
     startTransition(async () => {
       await createTask({
         title: title.trim(),
+        description: description.trim() || undefined,
         assignedToUserId: assignee || undefined,
         category: category as any,
         status: status as any,
-        priority: priority as any,
+        priority: (priority || undefined) as any,
+        startDate: startDate || undefined,
         dueDate: dueDate || undefined,
         additionalAssigneeIds: additionalAssignees.length > 0 ? additionalAssignees : undefined,
         assignedGroupIds: assignedGroups.length > 0 ? assignedGroups : undefined,
@@ -72,12 +76,14 @@ export function QuickAddModal({
         projectId: projectId || undefined,
       });
       setTitle("");
+      setDescription("");
       setAssignee("");
       setAdditionalAssignees([]);
       setAssignedGroups([]);
       setCategory(categories[0]?.name || "Operations");
       setStatus("Backlog");
-      setPriority("medium");
+      setPriority("");
+      setStartDate("");
       setDueDate("");
       setVisibility("private");
       setProjectId("");
@@ -99,6 +105,19 @@ export function QuickAddModal({
             onChange={(e) => setTitle(e.target.value)}
             placeholder="What needs to be done?"
             className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10 focus:border-[#1a3a2a]"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-stone-500 mb-1">
+            Description
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Add details or notes (optional)"
+            rows={2}
+            className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10 focus:border-[#1a3a2a] resize-none"
           />
         </div>
 
@@ -164,6 +183,7 @@ export function QuickAddModal({
               onChange={(e) => setPriority(e.target.value)}
               className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
             >
+              <option value="">No priority</option>
               {PRIORITIES.map((p) => (
                 <option key={p} value={p}>
                   {p.charAt(0).toUpperCase() + p.slice(1)}
@@ -269,16 +289,29 @@ export function QuickAddModal({
           </div>
         )}
 
-        <div>
-          <label className="block text-sm font-medium text-stone-500 mb-1">
-            Deadline
-          </label>
-          <input
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
-          />
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-stone-500 mb-1">
+              Start Date
+            </label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-stone-500 mb-1">
+              Deadline
+            </label>
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
+            />
+          </div>
         </div>
 
         <div className="flex justify-end gap-2 pt-2">

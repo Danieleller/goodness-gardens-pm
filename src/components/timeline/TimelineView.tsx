@@ -248,19 +248,15 @@ export function TimelineView({
                 <p className="text-[10px]" style={{ color: "var(--text-3)" }}>{group.tasks.length} task{group.tasks.length !== 1 ? "s" : ""}</p>
               </div>
 
-              {/* Day cells */}
+              {/* Day cells with bar overlay */}
               <div className="flex relative" style={{ minHeight: "48px" }}>
+                {/* Background day cells */}
                 {days.map((day, dayIdx) => {
                   const isWeekend = day.getDay() === 0 || day.getDay() === 6;
-                  const dayStr = format(day, "yyyy-MM-dd");
-                  const dayTasks = group.id === "__unscheduled__"
-                    ? [] // Unscheduled tasks don't go on day cells
-                    : group.tasks.filter((t) => t.dueDate === dayStr);
-
                   return (
                     <div
                       key={dayIdx}
-                      className="w-[40px] shrink-0 px-0.5 py-1 flex flex-col gap-0.5"
+                      className="w-[40px] shrink-0"
                       style={{
                         borderRight: "1px solid var(--border)",
                         background: isToday(day)
@@ -269,39 +265,65 @@ export function TimelineView({
                             ? "color-mix(in srgb, var(--surface-2) 50%, transparent)"
                             : undefined,
                       }}
-                    >
-                      {dayTasks.map((task) => {
-                        const overdue = isOverdue(task.dueDate) && task.status !== "Done";
-                        return (
-                          <Link
-                            key={task.id}
-                            href={`/tasks/${task.id}`}
-                            className="block rounded-sm px-0.5 py-0.5 text-[9px] leading-tight truncate transition-smooth hover:opacity-80"
-                            style={{
-                              background: task.status === "Done"
-                                ? "color-mix(in srgb, var(--done) 15%, transparent)"
-                                : task.status === "Blocked"
-                                  ? "color-mix(in srgb, var(--blocked) 15%, transparent)"
-                                  : overdue
-                                    ? "color-mix(in srgb, var(--overdue) 15%, transparent)"
-                                    : "color-mix(in srgb, var(--progress) 15%, transparent)",
-                              color: task.status === "Done"
-                                ? "var(--done)"
-                                : task.status === "Blocked"
-                                  ? "var(--blocked)"
-                                  : overdue
-                                    ? "var(--overdue)"
-                                    : "var(--progress)",
-                            }}
-                            title={task.title}
-                          >
-                            {task.title.length > 5 ? task.title.slice(0, 4) + "…" : task.title}
-                          </Link>
-                        );
-                      })}
-                    </div>
+                    />
                   );
                 })}
+
+                {/* Task bars overlay */}
+                {group.id !== "__unscheduled__" && (
+                  <div className="absolute inset-0 py-1 px-0.5 flex flex-col gap-1 pointer-events-none">
+                    {group.tasks.map((task) => {
+                      const taskStart = task.startDate || task.dueDate;
+                      const taskEnd = task.dueDate || task.startDate;
+                      if (!taskStart || !taskEnd) return null;
+
+                      const startDay = differenceInCalendarDays(new Date(taskStart), startDate);
+                      const endDay = differenceInCalendarDays(new Date(taskEnd), startDate);
+
+                      // Skip if entirely outside visible range
+                      if (endDay < 0 || startDay >= DAYS_VISIBLE) return null;
+
+                      const clampedStart = Math.max(0, startDay);
+                      const clampedEnd = Math.min(DAYS_VISIBLE - 1, endDay);
+                      const leftPx = clampedStart * 40;
+                      const widthPx = Math.max(80, (clampedEnd - clampedStart + 1) * 40 - 4);
+
+                      const overdue = isOverdue(task.dueDate) && task.status !== "Done";
+
+                      return (
+                        <Link
+                          key={task.id}
+                          href={`/tasks/${task.id}`}
+                          className="absolute rounded-md px-2 py-0.5 text-[10px] font-medium leading-tight truncate transition-smooth hover:opacity-80 pointer-events-auto"
+                          style={{
+                            left: `${leftPx}px`,
+                            width: `${widthPx}px`,
+                            top: undefined,
+                            position: "relative",
+                            background: task.status === "Done"
+                              ? "color-mix(in srgb, var(--done) 20%, transparent)"
+                              : task.status === "Blocked"
+                                ? "color-mix(in srgb, var(--blocked) 20%, transparent)"
+                                : overdue
+                                  ? "color-mix(in srgb, var(--overdue) 20%, transparent)"
+                                  : "color-mix(in srgb, var(--progress) 20%, transparent)",
+                            color: task.status === "Done"
+                              ? "var(--done)"
+                              : task.status === "Blocked"
+                                ? "var(--blocked)"
+                                : overdue
+                                  ? "var(--overdue)"
+                                  : "var(--progress)",
+                            borderLeft: `3px solid ${task.status === "Done" ? "var(--done)" : task.status === "Blocked" ? "var(--blocked)" : overdue ? "var(--overdue)" : "var(--progress)"}`,
+                          }}
+                          title={`${task.title}${task.startDate ? ` (${task.startDate} → ${task.dueDate})` : ` (Due: ${task.dueDate})`}`}
+                        >
+                          {task.title}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Unscheduled tasks shown as a row of pills */}
                 {group.id === "__unscheduled__" && (

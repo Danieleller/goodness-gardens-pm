@@ -22,6 +22,7 @@ export async function createTask(data: {
   title: string;
   description?: string;
   priority?: "low" | "medium" | "high";
+  startDate?: string;
   dueDate?: string;
   assignedToUserId?: string;
   category?: string;
@@ -44,6 +45,7 @@ export async function createTask(data: {
     title: data.title,
     description: data.description || null,
     priority: data.priority || "medium",
+    startDate: data.startDate || null,
     dueDate: data.dueDate || null,
     assignedToUserId: data.assignedToUserId || null,
     category: (data.category || "Operations") as any,
@@ -113,6 +115,7 @@ export async function updateTask(
     title: string;
     description: string;
     priority: string;
+    startDate: string | null;
     dueDate: string | null;
     assignedToUserId: string | null;
     category: string;

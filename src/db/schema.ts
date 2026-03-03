@@ -50,6 +50,7 @@ export const tasks = sqliteTable("tasks", {
   priority: text("priority", { enum: ["low", "medium", "high"] })
     .notNull()
     .default("medium"),
+  startDate: text("start_date"),
   dueDate: text("due_date"),
   assignedToUserId: text("assigned_to_user_id").references(() => users.id, {
     onDelete: "set null",

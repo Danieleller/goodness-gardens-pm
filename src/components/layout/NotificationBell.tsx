@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Bell } from "lucide-react";
 import { markNotificationRead, markAllNotificationsRead } from "@/actions/tasks";
 import Link from "next/link";
@@ -9,29 +9,46 @@ import type { Notification, Task } from "@/db/schema";
 type NotifWithTask = Notification & { task: Task | null };
 
 export function NotificationBell({
-  notifications,
+  notifications: initialNotifications,
 }: {
   notifications: NotifWithTask[];
 }) {
   const [open, setOpen] = useState(false);
+  const [localNotifications, setLocalNotifications] = useState(initialNotifications);
   const ref = useRef<HTMLDivElement>(null);
-  const unread = notifications.filter((n) => !n.read).length;
+  const unread = localNotifications.filter((n) => !n.read).length;
 
+  // Sync when props change (e.g. after revalidation)
   useEffect(() => {
+    setLocalNotifications(initialNotifications);
+  }, [initialNotifications]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    if (!open) return;
     const handleClick = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    // Use click (not mousedown) to avoid race with the toggle button
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [open]);
+
+  const handleMarkAllRead = useCallback(async () => {
+    // Optimistically clear unread state
+    setLocalNotifications((prev) =>
+      prev.map((n) => ({ ...n, read: true }))
+    );
+    await markAllNotificationsRead();
   }, []);
 
   return (
     <div ref={ref} className="relative">
       <button
-        onClick={() => setOpen(!open)}
-        className="relative p-2 rounded-lg transition-smooth"
+        onClick={() => setOpen((prev) => !prev)}
+        className="relative p-2 rounded-lg transition-smooth hover:bg-[var(--surface-2)]"
         style={{ color: "var(--text-3)" }}
       >
         <Bell className="w-5 h-5" />
@@ -62,9 +79,7 @@ export function NotificationBell({
             </span>
             {unread > 0 && (
               <button
-                onClick={async () => {
-                  await markAllNotificationsRead();
-                }}
+                onClick={handleMarkAllRead}
                 className="text-xs hover:underline"
                 style={{ color: "var(--accent)" }}
               >
@@ -74,7 +89,7 @@ export function NotificationBell({
           </div>
 
           <div className="max-h-64 overflow-y-auto">
-            {notifications.length === 0 ? (
+            {localNotifications.length === 0 ? (
               <div
                 className="p-4 text-center text-sm"
                 style={{ color: "var(--text-3)" }}
@@ -82,7 +97,7 @@ export function NotificationBell({
                 No notifications
               </div>
             ) : (
-              notifications.map((n) => (
+              localNotifications.map((n) => (
                 <div
                   key={n.id}
                   className="px-4 py-3"
@@ -97,7 +112,14 @@ export function NotificationBell({
                     <Link
                       href={`/tasks/${n.taskId}`}
                       onClick={async () => {
-                        if (!n.read) await markNotificationRead(n.id);
+                        if (!n.read) {
+                          setLocalNotifications((prev) =>
+                            prev.map((notif) =>
+                              notif.id === n.id ? { ...notif, read: true } : notif
+                            )
+                          );
+                          await markNotificationRead(n.id);
+                        }
                         setOpen(false);
                       }}
                       className="text-sm transition-smooth"

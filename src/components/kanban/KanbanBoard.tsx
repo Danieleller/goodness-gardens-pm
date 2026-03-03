@@ -41,15 +41,18 @@ export function KanbanBoard({
   categories,
   rocks = [],
   projects = [],
+  currentUserId,
 }: {
   initialTasks: TaskWithRelations[];
   users: User[];
   categories: Category[];
   rocks?: RockWithOwner[];
   projects?: ProjectWithMembers[];
+  currentUserId?: string;
 }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [view, setView] = useState<ViewMode>("person");
+  const [showAllPeople, setShowAllPeople] = useState(false);
   const [activeTask, setActiveTask] = useState<TaskWithRelations | null>(null);
   const [filters, setFilters] = useState<FilterCriteria>(emptyFilters);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -196,6 +199,20 @@ export function KanbanBoard({
     handleOptimisticUpdate(taskId, { status: newStatus });
   }, [handleOptimisticUpdate]);
 
+  // Exclude service accounts (e.g., "IT") from person view columns
+  const humanUsers = useMemo(() => {
+    return users.filter((u) => {
+      const name = (u.name || "").toLowerCase();
+      return name !== "it" && !name.startsWith("itsupport");
+    });
+  }, [users]);
+
+  // Users to display in person view: current user only or all
+  const personViewUsers = useMemo(() => {
+    if (view !== "person" || showAllPeople || !currentUserId) return humanUsers;
+    return humanUsers.filter((u) => u.id === currentUserId);
+  }, [view, showAllPeople, currentUserId, humanUsers]);
+
   // Build columns based on view
   const columns =
     view === "person"
@@ -207,7 +224,7 @@ export function KanbanBoard({
             color: "",
             isRocks: false,
           },
-          ...users.map((user) => ({
+          ...personViewUsers.map((user) => ({
             id: user.id,
             title: user.name || user.email,
             tasks: filteredTasks.filter(
@@ -259,6 +276,32 @@ export function KanbanBoard({
             </button>
           ))}
         </div>
+
+        {/* My Tasks / All toggle for person view */}
+        {view === "person" && currentUserId && (
+          <div className="flex rounded-lg p-0.5" style={{ background: "var(--surface-2)" }}>
+            <button
+              onClick={() => setShowAllPeople(false)}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-smooth ${!showAllPeople ? "shadow-sm" : ""}`}
+              style={{
+                background: !showAllPeople ? "var(--surface-1)" : "transparent",
+                color: !showAllPeople ? "var(--text)" : "var(--text-3)",
+              }}
+            >
+              My Tasks
+            </button>
+            <button
+              onClick={() => setShowAllPeople(true)}
+              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-smooth ${showAllPeople ? "shadow-sm" : ""}`}
+              style={{
+                background: showAllPeople ? "var(--surface-1)" : "transparent",
+                color: showAllPeople ? "var(--text)" : "var(--text-3)",
+              }}
+            >
+              All Tasks
+            </button>
+          </div>
+        )}
 
         {/* Filter toggle + chips */}
         {showFilters && (
@@ -313,7 +356,7 @@ export function KanbanBoard({
 
       {/* Views */}
       {view === "projects" ? (
-        <ProjectsView projects={projects} users={users} />
+        <ProjectsView projects={projects} users={users} tasks={tasks} />
       ) : view === "calendar" ? (
         <CalendarView tasks={filteredTasks} />
       ) : view === "table" ? (

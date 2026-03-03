@@ -107,9 +107,14 @@ export function TaskCard({
             {task.title}
           </Link>
 
-          {/* Metadata row: category Â· deadline Â· assignee */}
+          {/* Metadata row: priority · category · deadline · assignee */}
           <div className="flex flex-wrap items-center gap-1.5 mt-2">
             <Badge className={STATUS_COLORS[task.status]}>{task.status}</Badge>
+            {task.priority && task.priority !== "medium" && (
+              <Badge className={PRIORITY_COLORS[task.priority]}>
+                {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+              </Badge>
+            )}
             {task.category && (
               <span className={`text-[11px] ${isDarkCard ? "text-white/40" : ""}`} style={!isDarkCard ? { color: "var(--text-3)" } : undefined}>
                 {task.category}

@@ -1,8 +1,9 @@
 "use client";
 
-import { X } from "lucide-react";
+import { X, RotateCcw } from "lucide-react";
 import { STATUSES, PRIORITIES } from "@/lib/utils";
 import type { FilterCriteria } from "@/lib/types";
+import { emptyFilters, hasActiveFilters } from "@/lib/types";
 import type { User, Category } from "@/db/schema";
 import type { ProjectWithMembers } from "@/lib/types";
 
@@ -48,13 +49,25 @@ export function FilterPanel({
         <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "var(--text-2)" }}>
           Filters
         </span>
-        <button
-          onClick={onClose}
-          className="p-1 rounded-md transition-smooth hover:bg-[var(--surface-2)]"
-          style={{ color: "var(--text-3)" }}
-        >
-          <X className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex items-center gap-2">
+          {hasActiveFilters(filters) && (
+            <button
+              onClick={() => onChange(emptyFilters)}
+              className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-medium transition-smooth hover:bg-[var(--surface-2)]"
+              style={{ color: "var(--accent)" }}
+            >
+              <RotateCcw className="w-3 h-3" />
+              Clear All
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="p-1 rounded-md transition-smooth hover:bg-[var(--surface-2)]"
+            style={{ color: "var(--text-3)" }}
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">

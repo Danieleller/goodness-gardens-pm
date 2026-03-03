@@ -29,10 +29,10 @@ export async function auth(): Promise<Session | null> {
 
   if (!supaUser) return null;
 
-  const email = supaUser.email;
+  const email = supaUser.email?.toLowerCase();
   if (!email) return null;
 
-  // Look up the app-level user by email
+  // Look up the app-level user by email (normalized to lowercase)
   let dbUser = await db.query.users.findFirst({
     where: eq(users.email, email),
   });

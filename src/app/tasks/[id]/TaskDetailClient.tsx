@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import { updateTask, deleteTask, assignTaskToUsers, unassignTaskFromUser, assignTaskToGroup, unassignTaskFromGroup, createSubtask, toggleSubtask, deleteSubtask, addTaskMember, removeTaskMember } from "@/actions/tasks";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -70,6 +70,23 @@ export function TaskDetailClient({
 }) {
   const router = useRouter();
   const [task, setTask] = useState(initialTask);
+
+  // Build a user map for resolving UUIDs to display names in audit log
+  const userMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const u of users) {
+      map.set(u.id, u.name || u.email);
+    }
+    return map;
+  }, [users]);
+
+  const resolveAuditValue = (action: string, value: string | null): string | null => {
+    if (!value) return value;
+    if (action === "assignment_changed") {
+      return userMap.get(value) || value;
+    }
+    return value;
+  };
   const [isPending, startTransition] = useTransition();
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(task.title);
@@ -395,14 +412,14 @@ export function TaskDetailClient({
                             <span className="[color:var(--text-3)]">
                               {" "}
                               from{" "}
-                              <span className="line-through">{log.oldValue}</span> to{" "}
-                              <span className="font-medium [color:var(--text-2)]">{log.newValue}</span>
+                              <span className="line-through">{resolveAuditValue(log.action, log.oldValue)}</span> to{" "}
+                              <span className="font-medium [color:var(--text-2)]">{resolveAuditValue(log.action, log.newValue)}</span>
                             </span>
                           )}
                           {!log.oldValue && log.newValue && log.action !== "created" && (
                             <span className="[color:var(--text-3)]">
                               {" "}
-                              to <span className="font-medium [color:var(--text-2)]">{log.newValue}</span>
+                              to <span className="font-medium [color:var(--text-2)]">{resolveAuditValue(log.action, log.newValue)}</span>
                             </span>
                           )}
                         </p>
@@ -485,6 +502,21 @@ export function TaskDetailClient({
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="flex items-center gap-1.5 text-[11px] font-medium [color:var(--text-3)] uppercase tracking-wide mb-1.5">
+                  <Calendar className="w-3.5 h-3.5" />
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={task.startDate || ""}
+                  onChange={(e) =>
+                    handleUpdate("startDate", e.target.value || null)
+                  }
+                  className="w-full border border-[var(--border)] rounded-lg px-3 py-1.5 text-sm [color:var(--text)] bg-[var(--surface-1)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]/10 transition-smooth"
+                />
               </div>
 
               <div>

@@ -109,8 +109,14 @@ export function HeidiHintBubble() {
   }, [state, today, nextTipId]);
 
   const toggleBubble = useCallback(() => {
+    // If tips were disabled, re-enable when user explicitly clicks the button
+    if (!state.tipsEnabled) {
+      const newState: HeidiState = { ...state, tipsEnabled: true };
+      setState(newState);
+      saveState(newState);
+    }
     setExpanded((prev) => !prev);
-  }, []);
+  }, [state]);
 
   return (
     <div className="fixed bottom-6 right-6" style={{ zIndex: 90 }}>

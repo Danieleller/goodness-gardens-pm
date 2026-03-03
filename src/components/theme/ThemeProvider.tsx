@@ -44,9 +44,9 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(initialTheme ?? "system");
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(
-    resolveTheme(initialTheme ?? "system")
-  );
+  // Always start with "light" on server to avoid hydration mismatch;
+  // the blocking <script> in layout.tsx + useEffect below handles the real theme
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
 
   // On mount: apply theme from initialTheme or localStorage fallback
   useEffect(() => {

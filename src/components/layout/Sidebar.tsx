@@ -105,7 +105,7 @@ export function Sidebar({
         {/* Collapse toggle */}
         <button
           onClick={onToggleCollapse}
-          className="ml-auto p-1 rounded-md transition-colors"
+          className="ml-auto p-1 rounded-md transition-colors hover:bg-[var(--surface-2)]"
           style={{ color: "var(--text-3)" }}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}

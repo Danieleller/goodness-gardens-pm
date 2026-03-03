@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import {
   FolderOpen,
   Plus,
@@ -13,7 +13,8 @@ import {
   Users,
 } from "lucide-react";
 import { createProject, updateProject, deleteProject } from "@/actions/projects";
-import type { User, Project, ProjectMember } from "@/db/schema";
+import type { User, Project, ProjectMember, Task } from "@/db/schema";
+import type { TaskWithRelations } from "@/lib/types";
 
 type ProjectWithMembers = Project & {
   owner: User | null;
@@ -37,10 +38,31 @@ function getCurrentQuarter(): string {
 export function ProjectsView({
   projects,
   users,
+  tasks = [],
 }: {
   projects: ProjectWithMembers[];
   users: User[];
+  tasks?: TaskWithRelations[];
 }) {
+  // Build a map of project ID -> linked tasks for progress calculation
+  const tasksByProject = useMemo(() => {
+    const map = new Map<string, TaskWithRelations[]>();
+    for (const task of tasks) {
+      if (task.projectId) {
+        const existing = map.get(task.projectId) || [];
+        existing.push(task);
+        map.set(task.projectId, existing);
+      }
+    }
+    return map;
+  }, [tasks]);
+
+  const getProjectTaskProgress = (projectId: string) => {
+    const projectTasks = tasksByProject.get(projectId) || [];
+    if (projectTasks.length === 0) return { total: 0, done: 0, percent: 0 };
+    const done = projectTasks.filter((t) => t.status === "Done").length;
+    return { total: projectTasks.length, done, percent: Math.round((done / projectTasks.length) * 100) };
+  };
   const [isPending, startTransition] = useTransition();
   const [selectedQuarter, setSelectedQuarter] = useState(getCurrentQuarter());
   const [showAddForm, setShowAddForm] = useState(false);
@@ -141,6 +163,7 @@ export function ProjectsView({
     const statusConf = STATUS_CONFIG[project.status] || STATUS_CONFIG.not_started;
     const isEditing = editingProject === project.id;
     const isRock = project.type === "rock";
+    const taskProgress = getProjectTaskProgress(project.id);
 
     return (
       <div
@@ -187,14 +210,21 @@ export function ProjectsView({
             }`}>
               {project.title}
             </p>
-            {project.members.length > 0 && (
-              <div className="flex items-center gap-1 mt-0.5">
-                <Users className="w-3 h-3 [color:var(--text-3)]" />
+            <div className="flex items-center gap-2 mt-0.5">
+              {project.members.length > 0 && (
+                <div className="flex items-center gap-1">
+                  <Users className="w-3 h-3 [color:var(--text-3)]" />
+                  <span className="text-[10px] [color:var(--text-3)]">
+                    {project.members.length} member{project.members.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
+              )}
+              {taskProgress.total > 0 && (
                 <span className="text-[10px] [color:var(--text-3)]">
-                  {project.members.length} member{project.members.length !== 1 ? "s" : ""}
+                  {taskProgress.done}/{taskProgress.total} tasks done ({taskProgress.percent}%)
                 </span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
 

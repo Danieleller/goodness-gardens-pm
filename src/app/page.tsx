@@ -87,6 +87,7 @@ export default async function HomePage() {
           categories={allCategories}
           rocks={allRocks as any}
           projects={allProjects as any}
+          currentUserId={session.user.id!}
         />
       </main>
     </HomeShell>

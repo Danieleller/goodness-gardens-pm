@@ -42,7 +42,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased font-sans">
+      <body className="antialiased font-sans" suppressHydrationWarning>
         <ThemeProvider initialTheme={prefs.theme}>
           <OverlayProvider>{children}</OverlayProvider>
         </ThemeProvider>

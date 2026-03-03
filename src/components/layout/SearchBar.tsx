@@ -74,9 +74,10 @@ export function SearchBar() {
           <button
             onClick={() => {
               setQuery("");
+              setResults([]);
               setOpen(false);
             }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 transition-smooth"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-[var(--surface-2)] transition-smooth"
             style={{ color: "var(--text-3)" }}
           >
             <X className="w-4 h-4" />

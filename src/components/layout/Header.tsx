@@ -88,7 +88,7 @@ export function Header({
             {user.role === "admin" && (
               <Link
                 href="/settings"
-                className="p-2 rounded-lg transition-smooth"
+                className="p-2 rounded-lg transition-smooth hover:bg-[var(--surface-2)]"
                 style={{ color: "var(--text-3)" }}
                 title="Settings"
               >
