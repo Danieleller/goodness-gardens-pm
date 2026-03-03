@@ -5,7 +5,8 @@ import Image from "next/image";
 import { SearchBar } from "./SearchBar";
 import { NotificationBell } from "./NotificationBell";
 import { QuickAddModal } from "@/components/tasks/QuickAddModal";
-import { Plus, LogOut, Settings } from "lucide-react";
+import { Plus, LogOut, Settings, Menu } from "lucide-react";
+import { useMobileMenu } from "./HomeShell";
 
 const LOGO_URL = "https://s46ugccfpalsuqkp.public.blob.vercel-storage.com/logos/gdness-grdns-logo-default.png";
 import { createClient } from "@/lib/supabase/client";
@@ -31,6 +32,7 @@ export function Header({
   projects?: Project[];
 }) {
   const [showAdd, setShowAdd] = useState(false);
+  const onMobileMenuToggle = useMobileMenu();
 
   return (
     <>
@@ -42,6 +44,18 @@ export function Header({
         }}
       >
         <div className="flex items-center gap-4 px-5 py-3">
+          {/* Mobile hamburger */}
+          {onMobileMenuToggle && (
+            <button
+              onClick={onMobileMenuToggle}
+              className="md:hidden p-1.5 rounded-lg transition-smooth shrink-0"
+              style={{ color: "var(--text-2)" }}
+              aria-label="Open menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+          )}
+
           {/* Logo */}
           <div className="flex items-center gap-2.5 shrink-0">
             <Image src={LOGO_URL} alt="Goodness Gardens" width={140} height={36} className="h-8 w-auto object-contain" />

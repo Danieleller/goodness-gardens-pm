@@ -330,8 +330,23 @@ select option {
   animation: view-fade-in 200ms ease-out;
 }
 
+/* ═══ Mobile Sidebar Slide-in ═══ */
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 200ms ease-out;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .view-enter {
+  .view-enter,
+  .animate-slide-in-left {
     animation: none;
   }
 }

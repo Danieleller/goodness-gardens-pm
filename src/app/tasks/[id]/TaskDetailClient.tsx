@@ -512,8 +512,14 @@ export function TaskDetailClient({
                   Created
                 </label>
                 <p className="text-sm [color:var(--text-2)] px-1">
-                  {formatDate(task.createdAt?.toString())} by{" "}
-                  {task.createdBy?.name || task.createdBy?.email}
+                  {task.createdAt
+                    ? new Date(task.createdAt).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })
+                    : ""}{" "}
+                  by {task.createdBy?.name || task.createdBy?.email}
                 </p>
               </div>
             </div>
