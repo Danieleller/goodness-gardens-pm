@@ -185,12 +185,16 @@ export function KanbanBoard({
     [view, tasks, users, columnIds, findColumnForTask]
   );
 
-  // Optimistic update handler for inline edits (Table view)
+  // Optimistic update handler for inline edits (Table view, Done button, etc.)
   const handleOptimisticUpdate = useCallback((taskId: string, data: Record<string, unknown>) => {
     setTasks((prev) =>
       prev.map((t) => (t.id === taskId ? { ...t, ...data } as TaskWithRelations : t))
     );
   }, []);
+
+  const handleStatusChange = useCallback((taskId: string, newStatus: string) => {
+    handleOptimisticUpdate(taskId, { status: newStatus });
+  }, [handleOptimisticUpdate]);
 
   // Build columns based on view
   const columns =
@@ -335,6 +339,7 @@ export function KanbanBoard({
                   tasks={col.tasks}
                   color={col.color}
                   isRocks={col.isRocks}
+                  onStatusChange={handleStatusChange}
                 />
               ))}
             </div>

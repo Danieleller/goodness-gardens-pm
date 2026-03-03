@@ -14,12 +14,14 @@ export function KanbanColumn({
   tasks,
   color,
   isRocks = false,
+  onStatusChange,
 }: {
   id: string;
   title: string;
   tasks: TaskWithRelations[];
   color?: string;
   isRocks?: boolean;
+  onStatusChange?: (taskId: string, newStatus: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
@@ -77,7 +79,7 @@ export function KanbanColumn({
           strategy={verticalListSortingStrategy}
         >
           {tasks.map((task) => (
-            <TaskCard key={task.id} task={task} isRocksColumn={isRocks} />
+            <TaskCard key={task.id} task={task} isRocksColumn={isRocks} onStatusChange={onStatusChange} />
           ))}
         </SortableContext>
         {tasks.length === 0 && (

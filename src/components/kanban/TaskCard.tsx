@@ -19,9 +19,11 @@ import type { TaskWithRelations } from "@/lib/types";
 export function TaskCard({
   task,
   isRocksColumn = false,
+  onStatusChange,
 }: {
   task: TaskWithRelations;
   isRocksColumn?: boolean;
+  onStatusChange?: (taskId: string, newStatus: string) => void;
 }) {
   const [isPending, startTransition] = useTransition();
   const {
@@ -69,10 +71,10 @@ export function TaskCard({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            const newStatus = task.status === "Done" ? "Backlog" : "Done";
+            onStatusChange?.(task.id, newStatus);
             startTransition(async () => {
-              await updateTask(task.id, {
-                status: task.status === "Done" ? "Backlog" : "Done",
-              });
+              await updateTask(task.id, { status: newStatus });
             });
           }}
           disabled={isPending}
