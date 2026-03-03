@@ -11,6 +11,7 @@ export const users = sqliteTable("users", {
   role: text("role", { enum: ["admin", "manager", "member"] })
     .notNull()
     .default("member"),
+  managerId: text("manager_id"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -151,6 +152,12 @@ export const usersRelations = relations(users, ({ one, many }) => ({
   taskMemberships: many(taskMembers, { relationName: "taskMemberUser" }),
   projectMemberships: many(projectMembers, { relationName: "projectMemberUser" }),
   prefs: one(userPrefs),
+  manager: one(users, {
+    fields: [users.managerId],
+    references: [users.id],
+    relationName: "managerDirectReports",
+  }),
+  directReports: many(users, { relationName: "managerDirectReports" }),
 }));
 
 export const tasksRelations = relations(tasks, ({ one, many }) => ({

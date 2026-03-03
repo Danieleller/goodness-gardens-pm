@@ -150,3 +150,12 @@ export async function getAllUsers() {
   if (!session?.user?.id) throw new Error("Unauthorized");
   return db.query.users.findMany();
 }
+
+// ── Manager / Direct Reports ──────────────────────────
+export async function updateUserManager(userId: string, managerId: string | null) {
+  await requireAdmin();
+  if (userId === managerId) throw new Error("A user cannot be their own manager");
+  await db.update(users).set({ managerId }).where(eq(users.id, userId));
+  revalidatePath("/team");
+  revalidatePath("/settings");
+}
