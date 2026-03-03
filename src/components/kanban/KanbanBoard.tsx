@@ -26,8 +26,8 @@ import { FilterPanel } from "../filters/FilterPanel";
 import { FilterChips } from "../filters/FilterChips";
 import { updateTask } from "@/actions/tasks";
 import {
-  Users, LayoutGrid, Target, CalendarDays, AlertTriangle, Clock,
-  CheckCircle2, FolderOpen, List, BarChart3, CalendarRange, Filter,
+  Users, LayoutGrid, Target, CalendarDays,
+  FolderOpen, List, BarChart3, CalendarRange, Filter,
 } from "lucide-react";
 import type { User, Category, Rock, Project, ProjectMember } from "@/db/schema";
 import type { TaskWithRelations, RockWithOwner, ProjectWithMembers, FilterCriteria } from "@/lib/types";
@@ -56,15 +56,6 @@ export function KanbanBoard({
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
-
-  // Company Snapshot metrics
-  const totalOpen = tasks.filter((t) => t.status !== "Done").length;
-  const overdueTasks = tasks.filter(
-    (t) => t.status !== "Done" && t.dueDate && new Date(t.dueDate) < new Date(new Date().toDateString())
-  ).length;
-  const blockedTasks = tasks.filter((t) => t.status === "Blocked").length;
-  const doneTasks = tasks.filter((t) => t.status === "Done").length;
-  const completionRate = tasks.length > 0 ? Math.round((doneTasks / tasks.length) * 100) : 0;
 
   // Apply filters
   const filteredTasks = useMemo(() => {
@@ -230,47 +221,11 @@ export function KanbanBoard({
           isRocks: cat.name === "Rocks",
         }));
 
-  // Views that show the snapshot metrics
-  const showSnapshot = view === "person" || view === "category" || view === "table" || view === "workload";
   // Views that show the filter system
   const showFilters = view !== "projects";
 
   return (
     <div className="flex flex-col h-full">
-      {/* Company Snapshot */}
-      {showSnapshot && (
-        <div className="grid grid-cols-4 gap-3 px-5 pt-4 pb-2">
-          <div className="snapshot-card">
-            <div className="flex items-center gap-2 mb-1">
-              <Clock className="w-3.5 h-3.5" style={{ color: "var(--text-3)" }} />
-              <span className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--text-3)" }}>Open</span>
-            </div>
-            <p className="text-2xl font-semibold" style={{ color: "var(--text)" }}>{totalOpen}</p>
-          </div>
-          <div className="snapshot-card">
-            <div className="flex items-center gap-2 mb-1">
-              <AlertTriangle className="w-3.5 h-3.5" style={{ color: "var(--overdue, #f87171)" }} />
-              <span className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--text-3)" }}>Overdue</span>
-            </div>
-            <p className="text-2xl font-semibold" style={{ color: overdueTasks > 0 ? "var(--overdue, #ef4444)" : "var(--text)" }}>{overdueTasks}</p>
-          </div>
-          <div className="snapshot-card">
-            <div className="flex items-center gap-2 mb-1">
-              <AlertTriangle className="w-3.5 h-3.5" style={{ color: "var(--blocked, #fbbf24)" }} />
-              <span className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--text-3)" }}>Blocked</span>
-            </div>
-            <p className="text-2xl font-semibold" style={{ color: blockedTasks > 0 ? "var(--blocked, #d97706)" : "var(--text)" }}>{blockedTasks}</p>
-          </div>
-          <div className="snapshot-card">
-            <div className="flex items-center gap-2 mb-1">
-              <CheckCircle2 className="w-3.5 h-3.5" style={{ color: "var(--accent)" }} />
-              <span className="text-[11px] font-medium uppercase tracking-wide" style={{ color: "var(--text-3)" }}>Complete</span>
-            </div>
-            <p className="text-2xl font-semibold" style={{ color: "var(--text)" }}>{completionRate}%</p>
-          </div>
-        </div>
-      )}
-
       {/* Toolbar */}
       <div className="flex items-center gap-3 px-5 py-3 flex-wrap" style={{ borderBottom: "1px solid var(--border)" }}>
         {/* View toggle */}
