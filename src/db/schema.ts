@@ -68,7 +68,7 @@ export const tasks = sqliteTable("tasks", {
     enum: ["private", "project", "public"],
   })
     .notNull()
-    .default("public"),
+    .default("private"),
   projectId: text("project_id"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
