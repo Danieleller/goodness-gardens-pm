@@ -1,5 +1,6 @@
 "use client";
 
+import { useTransition } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Badge } from "@/components/ui/badge";
@@ -10,8 +11,9 @@ import {
   isOverdue,
   getStatusBorderClass,
 } from "@/lib/utils";
-import { Calendar, GripVertical } from "lucide-react";
+import { Calendar, GripVertical, Check } from "lucide-react";
 import Link from "next/link";
+import { updateTask } from "@/actions/tasks";
 import type { TaskWithRelations } from "@/lib/types";
 
 export function TaskCard({
@@ -21,6 +23,7 @@ export function TaskCard({
   task: TaskWithRelations;
   isRocksColumn?: boolean;
 }) {
+  const [isPending, startTransition] = useTransition();
   const {
     attributes,
     listeners,
@@ -60,6 +63,29 @@ export function TaskCard({
           }`}
         >
           <GripVertical className="w-3.5 h-3.5" />
+        </button>
+        {/* Done button */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            startTransition(async () => {
+              await updateTask(task.id, {
+                status: task.status === "Done" ? "Backlog" : "Done",
+              });
+            });
+          }}
+          disabled={isPending}
+          className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-smooth ${
+            task.status === "Done"
+              ? "bg-[var(--accent)] border-[var(--accent)] text-white"
+              : isDarkCard
+                ? "border-white/20 hover:border-white/50"
+                : "border-[var(--border)] hover:border-[var(--accent)]"
+          } ${isPending ? "opacity-50" : ""}`}
+          title={task.status === "Done" ? "Mark not done" : "Mark done"}
+        >
+          {task.status === "Done" && <Check className="w-3 h-3" />}
         </button>
         <div className="flex-1 min-w-0">
           <Link
