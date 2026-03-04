@@ -5,6 +5,7 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { Plus } from "lucide-react";
 import { TaskCard } from "./TaskCard";
 import type { TaskWithRelations } from "@/lib/types";
 
@@ -15,6 +16,7 @@ export function KanbanColumn({
   color,
   isRocks = false,
   onStatusChange,
+  onAddTask,
 }: {
   id: string;
   title: string;
@@ -22,6 +24,7 @@ export function KanbanColumn({
   color?: string;
   isRocks?: boolean;
   onStatusChange?: (taskId: string, newStatus: string) => void;
+  onAddTask?: (columnId: string) => void;
 }) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
@@ -50,16 +53,32 @@ export function KanbanColumn({
         >
           {title}
         </h3>
-        <span
-          className="text-[11px] font-medium rounded-md px-2 py-0.5"
-          style={
-            isRocks
-              ? { background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }
-              : { background: "var(--surface-2)", color: "var(--text-3)" }
-          }
-        >
-          {tasks.length}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className="text-[11px] font-medium rounded-md px-2 py-0.5"
+            style={
+              isRocks
+                ? { background: "rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }
+                : { background: "var(--surface-2)", color: "var(--text-3)" }
+            }
+          >
+            {tasks.length}
+          </span>
+          {onAddTask && (
+            <button
+              onClick={() => onAddTask(id)}
+              className="flex items-center justify-center w-5 h-5 rounded transition-smooth hover:scale-110"
+              style={
+                isRocks
+                  ? { color: "rgba(255,255,255,0.5)" }
+                  : { color: "var(--text-3)" }
+              }
+              title="Add task"
+            >
+              <Plus className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Task list drop zone */}

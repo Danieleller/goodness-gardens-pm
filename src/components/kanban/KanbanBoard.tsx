@@ -6,7 +6,6 @@ import {
   DragOverlay,
   pointerWithin,
   closestCorners,
-  rectIntersection,
   PointerSensor,
   useSensor,
   useSensors,
@@ -16,46 +15,50 @@ import {
 } from "@dnd-kit/core";
 import { KanbanColumn } from "./KanbanColumn";
 import { TaskCard } from "./TaskCard";
-import { RocksView } from "../rocks/RocksView";
-import { ProjectsView } from "../projects/ProjectsView";
-import { CalendarView } from "../calendar/CalendarView";
-import { TableView } from "../table/TableView";
-import { WorkloadView } from "../workload/WorkloadView";
-import { TimelineView } from "../timeline/TimelineView";
 import { FilterPanel } from "../filters/FilterPanel";
 import { FilterChips } from "../filters/FilterChips";
+import { QuickAddModal } from "../tasks/QuickAddModal";
 import { updateTask } from "@/actions/tasks";
 import {
-  Users, LayoutGrid, Target, CalendarDays,
-  FolderOpen, List, BarChart3, CalendarRange, Filter,
+  Users, LayoutGrid, Filter,
 } from "lucide-react";
-import type { User, Category, Rock, Project, ProjectMember } from "@/db/schema";
-import type { TaskWithRelations, RockWithOwner, ProjectWithMembers, FilterCriteria } from "@/lib/types";
+import type { User, Category } from "@/db/schema";
+import type { TaskWithRelations, ProjectWithMembers, FilterCriteria } from "@/lib/types";
 import { emptyFilters, hasActiveFilters, countActiveFilters } from "@/lib/types";
 
-type ViewMode = "person" | "category" | "projects" | "calendar" | "table" | "timeline" | "workload";
+type ViewMode = "person" | "category";
 
 export function KanbanBoard({
   initialTasks,
   users,
   categories,
-  rocks = [],
   projects = [],
   currentUserId,
 }: {
   initialTasks: TaskWithRelations[];
   users: User[];
   categories: Category[];
-  rocks?: RockWithOwner[];
   projects?: ProjectWithMembers[];
   currentUserId?: string;
 }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [view, setView] = useState<ViewMode>("person");
-  const [showAllPeople, setShowAllPeople] = useState(false);
+  const [personFilter, setPersonFilter] = useState<"mine" | "reports" | "all">("mine");
   const [activeTask, setActiveTask] = useState<TaskWithRelations | null>(null);
   const [filters, setFilters] = useState<FilterCriteria>(emptyFilters);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [quickAddDefaults, setQuickAddDefaults] = useState<{ assignee?: string; category?: string }>({});
+
+  const handleColumnAddTask = useCallback((columnId: string) => {
+    if (view === "person") {
+      setQuickAddDefaults({ assignee: columnId === "unassigned" ? undefined : columnId });
+    } else {
+      setQuickAddDefaults({ category: columnId });
+    }
+    setQuickAddOpen(true);
+  }, [view]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
   );
@@ -207,11 +210,15 @@ export function KanbanBoard({
     });
   }, [users]);
 
-  // Users to display in person view: current user only or all
+  // Users to display in person view: current user, reports, or all
   const personViewUsers = useMemo(() => {
-    if (view !== "person" || showAllPeople || !currentUserId) return humanUsers;
+    if (view !== "person" || !currentUserId) return humanUsers;
+    if (personFilter === "all") return humanUsers;
+    if (personFilter === "reports") {
+      return humanUsers.filter((u) => u.managerId === currentUserId);
+    }
     return humanUsers.filter((u) => u.id === currentUserId);
-  }, [view, showAllPeople, currentUserId, humanUsers]);
+  }, [view, personFilter, currentUserId, humanUsers]);
 
   // Build columns based on view
   const columns =
@@ -242,9 +249,6 @@ export function KanbanBoard({
           isRocks: cat.name === "Rocks",
         }));
 
-  // Views that show the filter system
-  const showFilters = view !== "projects";
-
   return (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
@@ -254,11 +258,6 @@ export function KanbanBoard({
           {([
             { key: "person" as const, icon: Users, label: "By Person" },
             { key: "category" as const, icon: LayoutGrid, label: "By Category" },
-            { key: "table" as const, icon: List, label: "Table" },
-            { key: "timeline" as const, icon: CalendarRange, label: "Timeline" },
-            { key: "workload" as const, icon: BarChart3, label: "Workload" },
-            { key: "projects" as const, icon: FolderOpen, label: "Projects" },
-            { key: "calendar" as const, icon: CalendarDays, label: "Calendar" },
           ]).map(({ key, icon: Icon, label }) => (
             <button
               key={key}
@@ -277,71 +276,64 @@ export function KanbanBoard({
           ))}
         </div>
 
-        {/* My Tasks / All toggle for person view */}
+        {/* My Tasks / My Reports / All toggle for person view */}
         {view === "person" && currentUserId && (
           <div className="flex rounded-lg p-0.5" style={{ background: "var(--surface-2)" }}>
-            <button
-              onClick={() => setShowAllPeople(false)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-smooth ${!showAllPeople ? "shadow-sm" : ""}`}
-              style={{
-                background: !showAllPeople ? "var(--surface-1)" : "transparent",
-                color: !showAllPeople ? "var(--text)" : "var(--text-3)",
-              }}
-            >
-              My Tasks
-            </button>
-            <button
-              onClick={() => setShowAllPeople(true)}
-              className={`px-2.5 py-1 rounded-md text-xs font-medium transition-smooth ${showAllPeople ? "shadow-sm" : ""}`}
-              style={{
-                background: showAllPeople ? "var(--surface-1)" : "transparent",
-                color: showAllPeople ? "var(--text)" : "var(--text-3)",
-              }}
-            >
-              All Tasks
-            </button>
+            {([
+              { key: "mine" as const, label: "My Tasks" },
+              { key: "reports" as const, label: "My Reports" },
+              { key: "all" as const, label: "All Tasks" },
+            ]).map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setPersonFilter(key)}
+                className={`px-2.5 py-1 rounded-md text-xs font-medium transition-smooth ${personFilter === key ? "shadow-sm" : ""}`}
+                style={{
+                  background: personFilter === key ? "var(--surface-1)" : "transparent",
+                  color: personFilter === key ? "var(--text)" : "var(--text-3)",
+                }}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         )}
 
         {/* Filter toggle + chips */}
-        {showFilters && (
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <button
-              onClick={() => setShowFilterPanel((v) => !v)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-smooth ${
-                showFilterPanel || hasActiveFilters(filters) ? "" : ""
-              }`}
-              style={{
-                border: "1px solid var(--border)",
-                background: hasActiveFilters(filters) ? "var(--accent-soft)" : "var(--surface-1)",
-                color: hasActiveFilters(filters) ? "var(--accent)" : "var(--text-2)",
-              }}
-            >
-              <Filter className="w-4 h-4" />
-              Filter
-              {countActiveFilters(filters) > 0 && (
-                <span
-                  className="text-[10px] font-bold rounded-full px-1.5 py-0.5"
-                  style={{ background: "var(--accent)", color: "white" }}
-                >
-                  {countActiveFilters(filters)}
-                </span>
-              )}
-            </button>
-            <FilterChips
-              filters={filters}
-              onChange={setFilters}
-              onClearAll={() => setFilters(emptyFilters)}
-              users={users}
-              categories={categories}
-              projects={projects}
-            />
-          </div>
-        )}
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <button
+            onClick={() => setShowFilterPanel((v) => !v)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-smooth"
+            style={{
+              border: "1px solid var(--border)",
+              background: hasActiveFilters(filters) ? "var(--accent-soft)" : "var(--surface-1)",
+              color: hasActiveFilters(filters) ? "var(--accent)" : "var(--text-2)",
+            }}
+          >
+            <Filter className="w-4 h-4" />
+            Filter
+            {countActiveFilters(filters) > 0 && (
+              <span
+                className="text-[10px] font-bold rounded-full px-1.5 py-0.5"
+                style={{ background: "var(--accent)", color: "white" }}
+              >
+                {countActiveFilters(filters)}
+              </span>
+            )}
+          </button>
+          <FilterChips
+            filters={filters}
+            onChange={setFilters}
+            onClearAll={() => setFilters(emptyFilters)}
+            users={users}
+            categories={categories}
+            projects={projects}
+          />
+        </div>
       </div>
 
       {/* Filter panel (collapsible) */}
-      {showFilterPanel && showFilters && (
+      {showFilterPanel && (
         <div className="px-5 pt-3">
           <FilterPanel
             filters={filters}
@@ -354,19 +346,8 @@ export function KanbanBoard({
         </div>
       )}
 
-      {/* Views */}
-      {view === "projects" ? (
-        <ProjectsView projects={projects} users={users} tasks={tasks} />
-      ) : view === "calendar" ? (
-        <CalendarView tasks={filteredTasks} />
-      ) : view === "table" ? (
-        <TableView tasks={filteredTasks} users={users} onUpdateTask={handleOptimisticUpdate} />
-      ) : view === "workload" ? (
-        <WorkloadView tasks={filteredTasks} users={users} />
-      ) : view === "timeline" ? (
-        <TimelineView tasks={filteredTasks} users={users} categories={categories} />
-      ) : (
-        <div className="flex-1 overflow-x-auto p-4 view-enter">
+      {/* Kanban view */}
+      <div className="flex-1 overflow-x-auto p-4 view-enter">
           <DndContext
             sensors={sensors}
             collisionDetection={customCollisionDetection}
@@ -383,6 +364,7 @@ export function KanbanBoard({
                   color={col.color}
                   isRocks={col.isRocks}
                   onStatusChange={handleStatusChange}
+                  onAddTask={handleColumnAddTask}
                 />
               ))}
             </div>
@@ -395,8 +377,18 @@ export function KanbanBoard({
               ) : null}
             </DragOverlay>
           </DndContext>
-        </div>
-      )}
+      </div>
+
+      <QuickAddModal
+        key={`${quickAddDefaults.assignee}-${quickAddDefaults.category}`}
+        open={quickAddOpen}
+        onClose={() => setQuickAddOpen(false)}
+        users={users}
+        categories={categories}
+        projects={projects as any}
+        defaultAssignee={quickAddDefaults.assignee}
+        defaultCategory={quickAddDefaults.category}
+      />
     </div>
   );
 }

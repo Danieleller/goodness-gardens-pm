@@ -18,6 +18,8 @@ export function QuickAddModal({
   categories,
   groups = [],
   projects = [],
+  defaultAssignee,
+  defaultCategory,
 }: {
   open: boolean;
   onClose: () => void;
@@ -25,14 +27,16 @@ export function QuickAddModal({
   categories: Category[];
   groups?: GroupWithMembers[];
   projects?: Project[];
+  defaultAssignee?: string;
+  defaultCategory?: string;
 }) {
   const [isPending, startTransition] = useTransition();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [assignee, setAssignee] = useState("");
+  const [assignee, setAssignee] = useState(defaultAssignee || "");
   const [additionalAssignees, setAdditionalAssignees] = useState<string[]>([]);
   const [assignedGroups, setAssignedGroups] = useState<string[]>([]);
-  const [category, setCategory] = useState<string>(categories[0]?.name || "Operations");
+  const [category, setCategory] = useState<string>(defaultCategory || categories[0]?.name || "Operations");
   const [status, setStatus] = useState<string>("Backlog");
   const [priority, setPriority] = useState<string>("");
   const [startDate, setStartDate] = useState("");

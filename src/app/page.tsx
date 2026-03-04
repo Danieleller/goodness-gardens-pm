@@ -85,7 +85,6 @@ export default async function HomePage() {
           initialTasks={allTasks as any}
           users={allUsers}
           categories={allCategories}
-          rocks={allRocks as any}
           projects={allProjects as any}
           currentUserId={session.user.id!}
         />
