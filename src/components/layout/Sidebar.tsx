@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Image from "next/image";
-import { CheckSquare, FolderKanban, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { CheckSquare, FolderKanban, Users, Menu } from "lucide-react";
 
 const LOGO_URL = "https://s46ugccfpalsuqkp.public.blob.vercel-storage.com/logos/gdness-grdns-logo-default.png";
 const LOGO_ICON_URL = "https://s46ugccfpalsuqkp.public.blob.vercel-storage.com/logos/gdness-grdns-logo-default-01-square-icon.png";
@@ -110,11 +110,7 @@ export function Sidebar({
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {collapsed ? (
-            <ChevronRight className="w-3.5 h-3.5" />
-          ) : (
-            <ChevronLeft className="w-3.5 h-3.5" />
-          )}
+          <Menu className="w-3.5 h-3.5" />
         </button>
       </div>
 

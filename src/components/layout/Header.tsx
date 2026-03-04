@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { SearchBar } from "./SearchBar";
 import { NotificationBell } from "./NotificationBell";
 import { QuickAddModal } from "@/components/tasks/QuickAddModal";
 import { Plus, LogOut, Settings, Menu } from "lucide-react";
 import { useMobileMenu } from "./HomeShell";
 
-const LOGO_URL = "https://s46ugccfpalsuqkp.public.blob.vercel-storage.com/logos/gdness-grdns-logo-default.png";
 import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import type { User, Notification, Task, Category, UserGroup, UserGroupMember, Project } from "@/db/schema";
@@ -55,17 +53,6 @@ export function Header({
               <Menu className="w-5 h-5" />
             </button>
           )}
-
-          {/* Logo */}
-          <div className="flex items-center gap-2.5 shrink-0">
-            <Image src={LOGO_URL} alt="Goodness Gardens" width={140} height={36} className="h-8 w-auto object-contain" />
-            <span
-              className="hidden sm:block text-[11px]"
-              style={{ color: "var(--text-3)" }}
-            >
-              Task Manager
-            </span>
-          </div>
 
           {/* Search */}
           <SearchBar />

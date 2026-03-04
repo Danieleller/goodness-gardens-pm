@@ -43,7 +43,7 @@ export function KanbanBoard({
 }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [view, setView] = useState<ViewMode>("person");
-  const [personFilter, setPersonFilter] = useState<"mine" | "reports" | "all">("mine");
+  const [personFilter, setPersonFilter] = useState<"mine" | "all">("mine");
   const [activeTask, setActiveTask] = useState<TaskWithRelations | null>(null);
   const [filters, setFilters] = useState<FilterCriteria>(emptyFilters);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
@@ -214,10 +214,7 @@ export function KanbanBoard({
   const personViewUsers = useMemo(() => {
     if (view !== "person" || !currentUserId) return humanUsers;
     if (personFilter === "all") return humanUsers;
-    if (personFilter === "reports") {
-      return humanUsers.filter((u) => u.managerId === currentUserId);
-    }
-    return humanUsers.filter((u) => u.id === currentUserId);
+    return humanUsers.filter((u) => u.id === currentUserId || u.managerId === currentUserId);
   }, [view, personFilter, currentUserId, humanUsers]);
 
   // Build columns based on view
@@ -281,7 +278,6 @@ export function KanbanBoard({
           <div className="flex rounded-lg p-0.5" style={{ background: "var(--surface-2)" }}>
             {([
               { key: "mine" as const, label: "My Tasks" },
-              { key: "reports" as const, label: "My Reports" },
               { key: "all" as const, label: "All Tasks" },
             ]).map(({ key, label }) => (
               <button

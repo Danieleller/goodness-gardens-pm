@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Modal } from "@/components/ui/modal";
 import { createTask } from "@/actions/tasks";
-import { STATUSES, PRIORITIES } from "@/lib/utils";
+import { PRIORITIES } from "@/lib/utils";
 import { X, Eye, EyeOff, FolderOpen } from "lucide-react";
 import type { User, Category, UserGroup, UserGroupMember, Project } from "@/db/schema";
 
@@ -37,9 +37,7 @@ export function QuickAddModal({
   const [additionalAssignees, setAdditionalAssignees] = useState<string[]>([]);
   const [assignedGroups, setAssignedGroups] = useState<string[]>([]);
   const [category, setCategory] = useState<string>(defaultCategory || categories[0]?.name || "Operations");
-  const [status, setStatus] = useState<string>("Backlog");
   const [priority, setPriority] = useState<string>("");
-  const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [visibility, setVisibility] = useState<"private" | "project" | "public">("private");
   const [projectId, setProjectId] = useState<string>("");
@@ -70,9 +68,8 @@ export function QuickAddModal({
         description: description.trim() || undefined,
         assignedToUserId: assignee || undefined,
         category: category as any,
-        status: status as any,
+        status: "Backlog" as any,
         priority: (priority || undefined) as any,
-        startDate: startDate || undefined,
         dueDate: dueDate || undefined,
         additionalAssigneeIds: additionalAssignees.length > 0 ? additionalAssignees : undefined,
         assignedGroupIds: assignedGroups.length > 0 ? assignedGroups : undefined,
@@ -85,9 +82,7 @@ export function QuickAddModal({
       setAdditionalAssignees([]);
       setAssignedGroups([]);
       setCategory(categories[0]?.name || "Operations");
-      setStatus("Backlog");
       setPriority("");
-      setStartDate("");
       setDueDate("");
       setVisibility("private");
       setProjectId("");
@@ -156,23 +151,6 @@ export function QuickAddModal({
               {categories.map((c) => (
                 <option key={c.name} value={c.name}>
                   {c.displayName}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-stone-500 mb-1">
-              Status
-            </label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
-            >
-              {STATUSES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
                 </option>
               ))}
             </select>
@@ -293,29 +271,16 @@ export function QuickAddModal({
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-stone-500 mb-1">
-              Start Date
-            </label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-stone-500 mb-1">
-              Deadline
-            </label>
-            <input
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-              className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
-            />
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-stone-500 mb-1">
+            Deadline
+          </label>
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            className="w-full rounded-lg border border-[#e8e0d4] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a3a2a]/10"
+          />
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
